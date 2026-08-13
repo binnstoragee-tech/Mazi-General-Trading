@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MAZI General Trading — Online Store</title>
+<link rel="icon" type="image/png" href="img/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ============ NAVBAR ============ -->
+<header class="navbar">
+  <div class="navbar-inner">
+    <a href="#" class="brand">
+      <img src="img/logo.png" alt="MAZI General Trading" class="brand-logo">
+    </a>
+
+    <div class="search-wrap">
+      <svg viewBox="0 0 24 24" class="search-icon"><path d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+      <input type="text" id="searchInput" placeholder="Search your products from here" autocomplete="off">
+    </div>
+
+    <div class="nav-actions">
+      <button class="icon-btn" id="mobileSearchBtn" aria-label="Search">
+        <svg viewBox="0 0 24 24"><path d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+      </button>
+      <button class="icon-btn nav-offers-btn" id="navOffersBtn" aria-label="Offers">
+        <svg viewBox="0 0 24 24"><path d="M20 12v9H4v-9M2 7h20v5H2V7zm10 0V3H8a2 2 0 000 4h4zm0 0V3h4a2 2 0 010 4h-4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+      </button>
+      <a href="viber://chat?number=" class="icon-btn nav-viber-btn" id="navViberBtn" aria-label="Chat with us on Viber" target="_blank" rel="noopener">
+        <img src="img/viber.png" alt="Viber" class="nav-viber-icon">
+      </a>
+      <button class="icon-btn" id="cartBtn" aria-label="Cart">
+        <svg viewBox="0 0 24 24"><path d="M6 6h15l-1.5 9h-12z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="9" cy="20" r="1.4" fill="currentColor"/><circle cx="17" cy="20" r="1.4" fill="currentColor"/><path d="M6 6L4.5 2H2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <span class="cart-count" id="cartCount">0</span>
+      </button>
+      <button class="login-btn" id="loginBtn">Login / Register</button>
+
+      <div class="profile-wrap" id="profileWrap" hidden>
+        <button class="profile-btn" id="profileBtn" aria-label="Account">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="9.8" r="3.3" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M5.5 19.2a7.2 7.2 0 0113 0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </button>
+        <div class="profile-dropdown" id="profileDropdown">
+          <button type="button" id="profileProfileBtn">Profile</button>
+          <button type="button" id="profileOrdersBtn">My Orders</button>
+          <button type="button" id="profileLogoutBtn">Logout</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ============ MOBILE SEARCH PANEL ============ -->
+<div class="mobile-search-backdrop" id="mobileSearchBackdrop"></div>
+<div class="mobile-search-panel" id="mobileSearchPanel">
+  <div class="mobile-search-bar">
+    <svg viewBox="0 0 24 24" class="search-icon"><path d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+    <input type="text" id="mobileSearchInput" placeholder="Search your products from here" autocomplete="off">
+    <button class="mobile-search-close" id="mobileSearchClose" aria-label="Close">&times;</button>
+  </div>
+  <div class="mobile-search-body" id="mobileSearchBody"></div>
+</div>
+
+<!-- ============ MAIN LAYOUT ============ -->
+<main class="layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-inner" id="sidebarInner">
+      <div class="sidebar-title">Categories</div>
+      <ul class="sidebar-list" id="sidebarList">
+        <div class="sidebar-highlight" id="sidebarHighlight"></div>
+      </ul>
+    </div>
+  </aside>
+
+  <div class="content">
+
+    <!-- Hero slideshow -->
+    <section class="hero" id="hero">
+      <div class="hero-track" id="heroTrack"></div>
+      <div class="hero-dots" id="heroDots"></div>
+    </section>
+
+    <!-- Categories toggle (mobile) -->
+    <div class="cat-toggle-bar" id="catToggleBar">
+      <button class="cat-toggle-btn" id="catToggleBtn">
+        <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <span>Categories</span>
+      </button>
+      <button class="cat-offers-btn" id="wishlistBtn">
+        <svg viewBox="0 0 24 24"><path d="M20 12v9H4v-9M2 7h20v5H2V7zm10 0V3H8a2 2 0 000 4h4zm0 0V3h4a2 2 0 010 4h-4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+        <span>Offers</span>
+      </button>
+    </div>
+
+    <!-- Results heading -->
+    <div class="section-head">
+      <h2 id="sectionTitle">All Products</h2>
+      <span class="result-count" id="resultCount"></span>
+    </div>
+
+    <!-- Product grid -->
+    <section class="product-grid" id="productGrid"></section>
+
+    <p class="empty-state" id="emptyState" hidden>No products found. Subukan mo ibang keyword po.</p>
+
+  </div>
+</main>
+
+<!-- ============ CART DRAWER ============ -->
+<div class="drawer-backdrop" id="drawerBackdrop"></div>
+<aside class="cart-drawer" id="cartDrawer">
+  <div class="drawer-head">
+    <h3>Your Cart</h3>
+    <button id="closeCart" aria-label="Close">&times;</button>
+  </div>
+  <div class="drawer-body" id="cartItems"></div>
+  <div class="drawer-foot">
+    <div class="drawer-subtotal">
+      <span>Subtotal</span>
+      <strong id="cartSubtotal">MVR 0.00</strong>
+    </div>
+    <button class="checkout-btn" id="checkoutBtn">Checkout</button>
+  </div>
+</aside>
+
+<!-- ============ MOBILE SIDEBAR MENU ============ -->
+<div class="menu-backdrop" id="menuBackdrop"></div>
+<aside class="mobile-menu" id="mobileMenu">
+  <div class="drawer-head">
+    <h3>Categories</h3>
+    <button id="closeMenu" aria-label="Close">&times;</button>
+  </div>
+  <div class="mobile-menu-body">
+    <ul class="sidebar-list" id="mobileMenuList">
+      <div class="sidebar-highlight" id="mobileMenuHighlight"></div>
+    </ul>
+  </div>
+</aside>
+
+<!-- ============ MOBILE PROFILE MENU ============ -->
+<div class="menu-backdrop" id="profileMenuBackdrop"></div>
+<aside class="profile-menu" id="profileMenu">
+  <div class="profile-menu-head">
+    <img src="img/logo.png" alt="MAZI General Trading" class="profile-menu-logo">
+    <button id="closeProfileMenu" aria-label="Close">&times;</button>
+  </div>
+  <div class="profile-menu-body">
+    <button type="button" id="pmProfileBtn">Profile</button>
+    <button type="button" id="pmOrdersBtn">My Orders</button>
+    <button type="button" id="pmLogoutBtn">Logout</button>
+  </div>
+</aside>
+
+<!-- ============ MOBILE BOTTOM NAV ============ -->
+<nav class="bottom-nav">
+  <button class="bn-item active" data-action="home">
+    <svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8M5 10v10h14V10" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+    <span>Home</span>
+  </button>
+  <a href="viber://chat?number=" class="bn-item bn-viber" id="bnViber" target="_blank" rel="noopener">
+    <img src="img/viber.png" alt="Viber" class="bn-viber-icon">
+    <span>Viber</span>
+  </a>
+  <button class="bn-item" data-action="orders">
+    <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-5 8h6m-6 4h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span>Orders</span>
+  </button>
+  <button class="bn-item" data-action="cart">
+    <svg viewBox="0 0 24 24"><path d="M6 6h15l-1.5 9h-12z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="9" cy="20" r="1.4" fill="currentColor"/><circle cx="17" cy="20" r="1.4" fill="currentColor"/></svg>
+    <span>Cart</span>
+    <span class="bn-badge" id="bnCartCount" hidden>0</span>
+  </button>
+  <button class="bn-item" data-action="profile">
+    <svg viewBox="0 0 24 24"><path d="M12 12a4.5 4.5 0 100-9 4.5 4.5 0 000 9zM4.5 20.25a7.5 7.5 0 0115 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span>Profile</span>
+  </button>
+</nav>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- ============ VIBER CHAT FAB ============ -->
+<a href="viber://chat?number=" class="viber-fab" id="viberFab" aria-label="Chat with us on Viber" target="_blank" rel="noopener">
+  <img src="img/viber.png" alt="Viber" class="viber-icon">
+</a>
+
+<!-- ============ AUTH MODAL (Login / Register) ============ -->
+<div class="auth-backdrop" id="authBackdrop"></div>
+<div class="auth-modal" id="authModal">
+  <div class="auth-card">
+    <button class="auth-close" id="authClose" aria-label="Close">&times;</button>
+
+    <div class="auth-head">
+      <img src="img/logo.png" alt="MAZI General Trading" class="auth-logo">
+      <p id="authSubtitle">Login with your mobile number / email &amp; password</p>
+    </div>
+
+    <p class="auth-terms" id="authTerms" hidden>
+      By signing up, you agree to our <a href="terms.html" target="_blank" rel="noopener">Terms</a> &amp; <a href="privacy.html" target="_blank" rel="noopener">Privacy Policy</a>
+    </p>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" data-tab="login">Login</button>
+      <button class="auth-tab" data-tab="register">Register</button>
+      <div class="auth-tab-highlight" id="authTabHighlight"></div>
+    </div>
+
+    <div class="auth-google-section" id="authGoogleSection" hidden>
+      <button class="auth-google-btn" id="authGoogleBtn">
+        <svg viewBox="0 0 48 48" width="18" height="18">
+          <path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"/>
+          <path fill="#FF3D00" d="M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 16.318 4 9.656 8.337 6.306 14.691z"/>
+          <path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238C29.211 35.091 26.715 36 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"/>
+          <path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303a12.04 12.04 0 01-4.087 5.571l.003-.002 6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z"/>
+        </svg>
+        Continue with Google
+      </button>
+      <div class="auth-divider"><span>or</span></div>
+    </div>
+
+    <form id="loginForm" class="auth-form">
+      <label class="auth-field">
+        <span>Email</span>
+        <input type="email" placeholder="you@example.com" required>
+      </label>
+      <label class="auth-field">
+        <span>Password</span>
+        <div class="auth-password-wrap">
+          <input type="password" placeholder="••••••••" required>
+          <button type="button" class="auth-eye-btn" data-eye-toggle aria-label="Show password">
+            <svg viewBox="0 0 24 24" class="eye-open"><path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+            <svg viewBox="0 0 24 24" class="eye-closed"><path d="M3 3l18 18M10.6 10.6a3 3 0 004.24 4.24M6.6 6.6C3.9 8.3 1.5 12 1.5 12s3.5 7 10.5 7c1.9 0 3.5-.5 4.8-1.2M17.4 17.4C20.1 15.7 22.5 12 22.5 12s-1.6-3.2-4.6-5.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </label>
+      <button type="submit" class="auth-submit-btn">Login</button>
+    </form>
+
+    <form id="registerForm" class="auth-form" hidden>
+      <label class="auth-field">
+        <span>First Name</span>
+        <input type="text" placeholder="Juan" required>
+      </label>
+      <label class="auth-field">
+        <span>Last Name</span>
+        <input type="text" placeholder="Dela Cruz" required>
+      </label>
+      <label class="auth-field" id="regMobileField">
+        <span>Mobile</span>
+        <input type="tel" placeholder="7xx-xxxx" required>
+        <small class="field-error" id="regMobileError" hidden>The mobile has already been taken.</small>
+      </label>
+      <label class="auth-field" id="regEmailField">
+        <span>Email (optional)</span>
+        <input type="email" placeholder="you@example.com">
+        <small class="field-error" id="regEmailError" hidden>The email has already been taken.</small>
+      </label>
+      <label class="auth-field">
+        <span>Password</span>
+        <div class="auth-password-wrap">
+          <input type="password" placeholder="••••••••" required>
+          <button type="button" class="auth-eye-btn" data-eye-toggle aria-label="Show password">
+            <svg viewBox="0 0 24 24" class="eye-open"><path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+            <svg viewBox="0 0 24 24" class="eye-closed"><path d="M3 3l18 18M10.6 10.6a3 3 0 004.24 4.24M6.6 6.6C3.9 8.3 1.5 12 1.5 12s3.5 7 10.5 7c1.9 0 3.5-.5 4.8-1.2M17.4 17.4C20.1 15.7 22.5 12 22.5 12s-1.6-3.2-4.6-5.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </label>
+      <label class="auth-field">
+        <span>Confirm Password</span>
+        <div class="auth-password-wrap">
+          <input type="password" placeholder="••••••••" required>
+          <button type="button" class="auth-eye-btn" data-eye-toggle aria-label="Show password">
+            <svg viewBox="0 0 24 24" class="eye-open"><path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+            <svg viewBox="0 0 24 24" class="eye-closed"><path d="M3 3l18 18M10.6 10.6a3 3 0 004.24 4.24M6.6 6.6C3.9 8.3 1.5 12 1.5 12s3.5 7 10.5 7c1.9 0 3.5-.5 4.8-1.2M17.4 17.4C20.1 15.7 22.5 12 22.5 12s-1.6-3.2-4.6-5.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </label>
+      <button type="submit" class="auth-submit-btn">Register</button>
+    </form>
+
+    <p class="auth-switch" id="authSwitchLine">
+      Don't have an account? <button type="button" id="authSwitchBtn">Register</button>
+    </p>
+  </div>
+</div>
+
+<!-- ============ ONBOARDING MODAL (first login account setup) ============ -->
+<div class="onboard-backdrop" id="onboardBackdrop"></div>
+<div class="onboard-modal" id="onboardModal">
+  <div class="onboard-card">
+    <h2 class="onboard-title" id="onboardTitle">Welcome!</h2>
+    <p class="onboard-sub">We would like to take this moment to guide you through the setup of your first account.</p>
+
+    <form id="onboardForm" class="onboard-form">
+      <label class="auth-field">
+        <span>Account Type</span>
+        <select id="obAccountType">
+          <option value="business">Business</option>
+          <option value="residence">Residence</option>
+        </select>
+      </label>
+
+      <div id="obBusinessFields">
+        <label class="auth-field">
+          <span>Business Type</span>
+          <select id="obBusinessType">
+            <option value="">Select business type</option>
+            <option>Retail Shop</option>
+            <option>Wholesale / Trading</option>
+            <option>Restaurant / Café</option>
+            <option>Guesthouse / Hotel</option>
+            <option>Other</option>
+          </select>
+        </label>
+      </div>
+
+      <label class="auth-field">
+        <span>City/Island</span>
+        <select id="obCity">
+          <option value="">Select city/island</option>
+        </select>
+      </label>
+
+      <button type="submit" class="onboard-submit-btn">Submit</button>
+    </form>
+  </div>
+</div>
+
+<!-- ============ LOGOUT CONFIRM MODAL ============ -->
+<div class="confirm-backdrop" id="logoutConfirmBackdrop"></div>
+<div class="confirm-modal" id="logoutConfirmModal">
+  <div class="confirm-card">
+    <h3 class="confirm-title">Are you sure you want to log out?</h3>
+    <p class="confirm-sub">You'll need to log in again to access your account.</p>
+    <div class="confirm-actions">
+      <button type="button" class="confirm-cancel-btn" id="logoutCancelBtn">Cancel</button>
+      <button type="button" class="confirm-ok-btn" id="logoutConfirmBtn">Log out</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ AUTH LOADING OVERLAY ============ -->
+<div class="auth-loading" id="authLoading">
+  <div class="auth-loading-dots">
+    <span></span><span></span><span></span>
+  </div>
+</div>
+
+<!-- ============ PROFILE PAGE ============ -->
+<div class="profile-view" id="profileView">
+  <div class="profile-view-topbar">
+    <button class="profile-view-close" id="profileViewClose" aria-label="Back to store">
+      <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Back to store
+    </button>
+  </div>
+  <div class="profile-view-wrap">
+
+    <div class="profile-view-card">
+      <div class="profile-view-grid">
+        <label class="auth-field">
+          <span>First Name</span>
+          <input type="text" id="pvFirstName">
+        </label>
+        <label class="auth-field">
+          <span>Last Name</span>
+          <input type="text" id="pvLastName">
+        </label>
+        <label class="auth-field">
+          <span>Email</span>
+          <input type="email" id="pvEmail">
+        </label>
+        <label class="auth-field">
+          <span>Contact Number</span>
+          <input type="tel" id="pvMobile">
+        </label>
+      </div>
+    </div>
+
+    <div class="profile-view-card">
+      <label class="auth-field">
+        <span>Current Password</span>
+        <div class="auth-password-wrap">
+          <input type="password" id="pvCurrentPassword" placeholder="••••••••">
+          <button type="button" class="auth-eye-btn" data-eye-toggle aria-label="Show password">
+            <svg viewBox="0 0 24 24" class="eye-open"><path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+            <svg viewBox="0 0 24 24" class="eye-closed"><path d="M3 3l18 18M10.6 10.6a3 3 0 004.24 4.24M6.6 6.6C3.9 8.3 1.5 12 1.5 12s3.5 7 10.5 7c1.9 0 3.5-.5 4.8-1.2M17.4 17.4C20.1 15.7 22.5 12 22.5 12s-1.6-3.2-4.6-5.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </label>
+
+      <div class="profile-view-grid">
+        <label class="auth-field">
+          <span>New Password</span>
+          <div class="auth-password-wrap">
+            <input type="password" id="pvNewPassword" placeholder="••••••••">
+            <button type="button" class="auth-eye-btn" data-eye-toggle aria-label="Show password">
+              <svg viewBox="0 0 24 24" class="eye-open"><path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+              <svg viewBox="0 0 24 24" class="eye-closed"><path d="M3 3l18 18M10.6 10.6a3 3 0 004.24 4.24M6.6 6.6C3.9 8.3 1.5 12 1.5 12s3.5 7 10.5 7c1.9 0 3.5-.5 4.8-1.2M17.4 17.4C20.1 15.7 22.5 12 22.5 12s-1.6-3.2-4.6-5.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
+        </label>
+        <label class="auth-field">
+          <span>Confirm Password</span>
+          <div class="auth-password-wrap">
+            <input type="password" id="pvConfirmPassword" placeholder="••••••••">
+            <button type="button" class="auth-eye-btn" data-eye-toggle aria-label="Show password">
+              <svg viewBox="0 0 24 24" class="eye-open"><path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+              <svg viewBox="0 0 24 24" class="eye-closed"><path d="M3 3l18 18M10.6 10.6a3 3 0 004.24 4.24M6.6 6.6C3.9 8.3 1.5 12 1.5 12s3.5 7 10.5 7c1.9 0 3.5-.5 4.8-1.2M17.4 17.4C20.1 15.7 22.5 12 22.5 12s-1.6-3.2-4.6-5.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
+        </label>
+      </div>
+
+      <div class="profile-view-save-row">
+        <button type="button" class="profile-view-save-btn" id="pvSaveBtn">Save</button>
+      </div>
+    </div>
+
+    <div class="profile-view-delete-bar">
+      Click here to <a href="#" id="pvDeleteAccountLink">Delete My Account</a>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============ ORDERS PAGE ============ -->
+<div class="profile-view orders-view" id="ordersView">
+  <div class="profile-view-topbar">
+    <button class="profile-view-close" id="ordersViewClose" aria-label="Back to store">
+      <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Back to store
+    </button>
+  </div>
+  <div class="profile-view-wrap orders-view-wrap">
+    <div class="orders-card">
+      <div class="orders-card-head">
+        <h1>My Orders</h1>
+        <span class="orders-count" id="ordersCount"></span>
+      </div>
+      <div class="orders-card-body" id="ordersCardBody"></div>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
