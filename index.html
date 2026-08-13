@@ -7,7 +7,7 @@
 <link rel="icon" type="image/png" href="img/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -111,6 +111,65 @@
 
   </div>
 </main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <img src="img/logo.png" alt="MAZI General Trading" class="footer-logo">
+        <p class="footer-tagline">Grocery &amp; convenience wholesale, delivered across Male' and beyond.</p>
+        <a href="viber://chat?number=" class="footer-viber-btn" target="_blank" rel="noopener">
+          <img src="img/viber.png" alt="Viber" class="footer-viber-icon">
+          Chat with us on Viber
+        </a>
+      </div>
+
+      <div class="footer-col">
+        <h4>Shop</h4>
+        <ul>
+          <li><a href="#" data-footer-cat="all">All Categories</a></li>
+          <li><a href="#" data-footer-cat="dairy">Dairy</a></li>
+          <li><a href="#" data-footer-cat="beverages">Beverages</a></li>
+          <li><a href="#" data-footer-cat="household">Household &amp; Cleaning</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Account</h4>
+        <ul>
+          <li><a href="#" id="footerLoginLink">Login / Register</a></li>
+          <li><a href="#" id="footerOrdersLink">My Orders</a></li>
+          <li><a href="#" id="footerCartLink">Cart</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Company</h4>
+        <ul>
+          <li><a href="privacy.html">Privacy Policy</a></li>
+          <li><a href="terms.html">Terms &amp; Conditions</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Get in Touch</h4>
+        <ul class="footer-contact">
+          <li>Male', Republic of Maldives</li>
+          <li><a href="mailto:info@mazitrading.mv">info@mazitrading.mv</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <span>MAZI General Trading</span>
+      <div class="footer-bottom-links">
+        <a href="privacy.html">Privacy</a>
+        <a href="terms.html">Terms</a>
+      </div>
+    </div>
+  </div>
+</footer>
 
 <!-- ============ CART DRAWER ============ -->
 <div class="drawer-backdrop" id="drawerBackdrop"></div>
@@ -445,6 +504,24 @@
         <span class="orders-count" id="ordersCount"></span>
       </div>
       <div class="orders-card-body" id="ordersCardBody"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ PRODUCT DETAIL PAGE ============ -->
+<div class="profile-view product-view" id="productView">
+  <div class="profile-view-topbar">
+    <button class="profile-view-close" id="productViewClose" aria-label="Back to store">
+      <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Back to store
+    </button>
+  </div>
+  <div class="profile-view-wrap product-view-wrap">
+    <div class="product-detail-card" id="productDetailCard"></div>
+
+    <div class="similar-products-section" id="similarProductsSection" hidden>
+      <h3 class="similar-products-title">Similar Products</h3>
+      <div class="product-grid" id="similarProductsGrid"></div>
     </div>
   </div>
 </div>

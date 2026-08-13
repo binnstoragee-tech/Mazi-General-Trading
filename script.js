@@ -58,10 +58,10 @@ const PRODUCTS = [
 
 /* ---------- Hero slides ---------- */
 const HERO_SLIDES = [
-  { eyebrow:'New Arrivals', title:'Stock up your shelves the smart way', desc:'Wholesale prices on dairy, beverages and daily essentials — delivered island-wide.', cta:'Shop All Products', icon:'📦' },
-  { eyebrow:'This Week', title:'Free delivery on orders over MVR 500', desc:"Order today within Male' and get it delivered by tomorrow.", cta:'Start Shopping', icon:'🚚' },
-  { eyebrow:'Trade Partners', title:'Bulk pricing for shops & resellers', desc:'Register your business account for tiered wholesale rates.', cta:'Register Now', icon:'🤝' },
-  { eyebrow:'Fresh Stock', title:'New dairy & beverage shipment has arrived', desc:'Coast, Dutch Farm and Cimory now back in full stock.', cta:'View Dairy', icon:'🥛' },
+  { eyebrow:'New Arrivals', title:'Stock up your shelves the smart way', desc:'Wholesale prices on dairy, beverages and daily essentials — delivered island-wide.', cta:'Shop All Products', icon:'📦', img:'img/new arrivals.jpg' },
+  { eyebrow:'This Week', title:'Free delivery on orders over MVR 500', desc:"Order today within Male' and get it delivered by tomorrow.", cta:'Start Shopping', icon:'🚚', img:'img/delivery.jpg' },
+  { eyebrow:'Trade Partners', title:'Bulk pricing for shops & resellers', desc:'Register your business account for tiered wholesale rates.', cta:'Register Now', icon:'🤝', img:'img/trade.jpg' },
+  { eyebrow:'Fresh Stock', title:'New dairy & beverage shipment has arrived', desc:'Coast, Dutch Farm and Cimory now back in full stock.', cta:'View Dairy', icon:'🥛', img:'img/shipment.jpg' },
 ];
 
 /* ---------- State ---------- */
@@ -75,7 +75,7 @@ let state = {
 /* ============ Helpers ============ */
 const fmt = n => 'MVR ' + n.toFixed(2);
 const $ = sel => document.querySelector(sel);
-const $$ = sel => Array.from(document.querySelectorAll(sel));
+const $$ = (sel, root) => Array.from((root || document).querySelectorAll(sel));
 
 function saveCart(){
   localStorage.setItem('mazi_cart', JSON.stringify(state.cart));
@@ -127,7 +127,7 @@ function renderCategoryNav(){
   $$('[data-cat]').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       state.category = btn.dataset.cat;
-      renderCategoryNav();
+      $$('[data-cat]').forEach(b=> b.classList.toggle('active', b.dataset.cat === state.category));
       renderProducts();
       closeMenu();
     });
@@ -174,7 +174,9 @@ function renderHero(){
         <p class="hero-desc">${s.desc}</p>
         <a href="#productGrid" class="hero-cta">${s.cta}</a>
       </div>
-      <div class="hero-visual">${s.icon}</div>
+      ${s.img
+        ? `<div class="hero-visual has-img"><img src="${s.img}" alt="${s.eyebrow}"></div>`
+        : `<div class="hero-visual">${s.icon}</div>`}
     </div>
   `).join('');
 
@@ -228,25 +230,59 @@ function cardActionHtml(p){
 function bindCardSlot(el){
   if (!el) return;
   if (el.classList.contains('card-add')){
-    el.addEventListener('click', ()=> addToCart(el.dataset.id));
+    el.addEventListener('click', (e)=>{ e.stopPropagation(); addToCart(el.dataset.id); });
   } else if (el.classList.contains('card-qty')){
     const id = el.dataset.id;
     el.querySelectorAll('.qty-btn').forEach(b=>{
-      b.addEventListener('click', ()=> changeQty(id, parseInt(b.dataset.dir, 10)));
+      b.addEventListener('click', (e)=>{ e.stopPropagation(); changeQty(id, parseInt(b.dataset.dir, 10)); });
     });
   }
 }
 
 function refreshCardSlot(id){
-  const old = $(`#productGrid .card-add[data-id="${id}"]`) || $(`#productGrid .card-qty[data-id="${id}"]`);
-  if (!old) return;
+  // Update every instance of this product's add/qty control on the page —
+  // it can appear in the main grid, the product detail view, and the
+  // similar-products strip all at once.
+  const olds = $$(`.card-add[data-id="${id}"], .card-qty[data-id="${id}"]`);
+  if (!olds.length) return;
   const p = PRODUCTS.find(p=>p.id===id);
-  const temp = document.createElement('div');
-  temp.innerHTML = cardActionHtml(p).trim();
-  const fresh = temp.firstElementChild;
-  fresh.classList.add('swap-in');
-  old.replaceWith(fresh);
-  bindCardSlot(fresh);
+  olds.forEach(old=>{
+    const temp = document.createElement('div');
+    temp.innerHTML = cardActionHtml(p).trim();
+    const fresh = temp.firstElementChild;
+    fresh.classList.add('swap-in');
+    old.replaceWith(fresh);
+    bindCardSlot(fresh);
+  });
+}
+
+function productCardHtml(p){
+  return `
+    <div class="product-card" data-id="${p.id}">
+      <div class="card-media">
+        <span class="stock-badge ${p.stock==='in'?'in':''}">${p.stock==='low'?'Low Stock':'In Stock'}</span>
+        <img class="card-img" src="${productImg(p)}" alt="${p.name}" loading="lazy" onerror="this.classList.add('img-missing')">
+      </div>
+      <div class="card-body">
+        <div class="card-title">${p.name}</div>
+        <div class="card-code">${p.id}</div>
+        <div class="card-meta">
+          <div class="card-unit"><small>${p.pack}</small><strong>${p.unit}</strong></div>
+          <div class="card-price">${fmt(p.price)}</div>
+        </div>
+        ${cardActionHtml(p)}
+      </div>
+    </div>
+  `;
+}
+
+function bindProductCardClicks(container){
+  $$('.product-card', container).forEach(card=>{
+    card.addEventListener('click', (e)=>{
+      if (e.target.closest('.card-add, .card-qty')) return;
+      openProductView(card.dataset.id);
+    });
+  });
 }
 
 function productImg(p){
@@ -279,26 +315,58 @@ function renderProducts(){
   $('#emptyState').hidden = list.length !== 0;
   $('#productGrid').style.display = list.length === 0 ? 'none' : 'grid';
 
-  $('#productGrid').innerHTML = list.map(p => `
-    <div class="product-card">
-      <div class="card-media">
-        <span class="stock-badge ${p.stock==='in'?'in':''}">${p.stock==='low'?'Low Stock':'In Stock'}</span>
-        <img class="card-img" src="${productImg(p)}" alt="${p.name}" loading="lazy" onerror="this.classList.add('img-missing')">
-        <span class="pack-badge">${p.pack}</span>
-      </div>
-      <div class="card-body">
-        <div class="card-title">${p.name}</div>
-        <div class="card-code">${p.id}</div>
-        <div class="card-meta">
-          <div class="card-unit"><small>${p.pack}</small><strong>${p.unit}</strong></div>
-          <div class="card-price">${fmt(p.price)}</div>
-        </div>
-        ${cardActionHtml(p)}
-      </div>
-    </div>
-  `).join('');
+  $('#productGrid').innerHTML = list.map(p => productCardHtml(p)).join('');
 
   $$('#productGrid .card-add, #productGrid .card-qty').forEach(bindCardSlot);
+  bindProductCardClicks($('#productGrid'));
+}
+
+/* ============ Product detail view ============ */
+function renderProductDetail(p){
+  $('#productDetailCard').innerHTML = `
+    <div class="pd-media">
+      <span class="stock-badge ${p.stock==='in'?'in':''}">${p.stock==='low'?'Low Stock':'In Stock'}</span>
+      <img src="${productImg(p)}" alt="${p.name}" onerror="this.classList.add('img-missing')">
+    </div>
+    <div class="pd-info">
+      <div>
+        <div class="pd-title">${p.name}</div>
+        <div class="pd-code">${p.id}</div>
+      </div>
+      <div class="pd-divider"></div>
+      <div class="pd-meta">
+        <div class="pd-unit"><small>${p.pack}</small><strong>${p.unit}</strong></div>
+        <div class="pd-price">${fmt(p.price)}</div>
+      </div>
+      <div class="pd-divider"></div>
+      <div class="pd-actions" data-id="${p.id}">${cardActionHtml(p)}</div>
+    </div>
+  `;
+  bindCardSlot($('#productDetailCard .card-add') || $('#productDetailCard .card-qty'));
+}
+
+function renderSimilarProducts(p){
+  const similar = PRODUCTS.filter(x => x.cat === p.cat && x.id !== p.id).slice(0, 4);
+  const section = $('#similarProductsSection');
+  if (!similar.length){ section.hidden = true; return; }
+  section.hidden = false;
+  $('#similarProductsGrid').innerHTML = similar.map(x => productCardHtml(x)).join('');
+  $$('#similarProductsGrid .card-add, #similarProductsGrid .card-qty').forEach(bindCardSlot);
+  bindProductCardClicks($('#similarProductsGrid'));
+}
+
+function openProductView(id){
+  const p = PRODUCTS.find(p=>p.id===id);
+  if (!p) return;
+  renderProductDetail(p);
+  renderSimilarProducts(p);
+  $('#productView').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  $('#productView').scrollTop = 0;
+}
+function closeProductView(){
+  $('#productView').classList.remove('open');
+  document.body.style.overflow = '';
 }
 
 /* ============ Cart logic ============ */
@@ -1039,6 +1107,23 @@ function init(){
   $('#wishlistBtn').addEventListener('click', ()=> showToast('No offers saved yet'));
   $('#navOffersBtn').addEventListener('click', ()=> showToast('No offers saved yet'));
 
+  // Footer links
+  $$('[data-footer-cat]').forEach(link=>{
+    link.addEventListener('click', (e)=>{
+      e.preventDefault();
+      state.category = link.dataset.footerCat;
+      renderCategoryNav();
+      renderProducts();
+      window.scrollTo({top:0, behavior:'smooth'});
+    });
+  });
+  const footerLoginLink = $('#footerLoginLink');
+  if (footerLoginLink) footerLoginLink.addEventListener('click', (e)=>{ e.preventDefault(); openLogin(); });
+  const footerOrdersLink = $('#footerOrdersLink');
+  if (footerOrdersLink) footerOrdersLink.addEventListener('click', (e)=>{ e.preventDefault(); openOrdersView(); });
+  const footerCartLink = $('#footerCartLink');
+  if (footerCartLink) footerCartLink.addEventListener('click', (e)=>{ e.preventDefault(); openCart(); });
+
   $('#logoutCancelBtn').addEventListener('click', closeLogoutConfirm);
   $('#logoutConfirmBackdrop').addEventListener('click', closeLogoutConfirm);
   $('#logoutConfirmBtn').addEventListener('click', ()=>{
@@ -1047,6 +1132,7 @@ function init(){
   });
 
   $('#profileViewClose').addEventListener('click', closeProfileView);
+  $('#productViewClose').addEventListener('click', closeProductView);
   $('#pvSaveBtn').addEventListener('click', saveProfileView);
   $('#ordersViewClose').addEventListener('click', closeOrdersView);
   $('#pvDeleteAccountLink').addEventListener('click', e=>{
