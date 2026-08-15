@@ -57,19 +57,45 @@ const PRODUCTS = [
 ];
 
 /* ---------- Hero slides ---------- */
+/* TODO: paste the Viber community invite link here (e.g. https://invite.viber.com/?g=xxxxxxxx) */
+const VIBER_COMMUNITY_LINK = '';
+
 const HERO_SLIDES = [
-  { eyebrow:'New Arrivals', title:'Stock up your shelves the smart way', desc:'Wholesale prices on dairy, beverages and daily essentials — delivered island-wide.', cta:'Shop All Products', icon:'📦', img:'img/new arrivals.jpg' },
   { eyebrow:'This Week', title:'Free delivery on orders over MVR 500', desc:"Order today within Male' and get it delivered by tomorrow.", cta:'Start Shopping', icon:'🚚', img:'img/delivery.jpg' },
-  { eyebrow:'Trade Partners', title:'Bulk pricing for shops & resellers', desc:'Register your business account for tiered wholesale rates.', cta:'Register Now', icon:'🤝', img:'img/trade.jpg' },
-  { eyebrow:'Fresh Stock', title:'New dairy & beverage shipment has arrived', desc:'Coast, Dutch Farm and Cimory now back in full stock.', cta:'View Dairy', icon:'🥛', img:'img/shipment.jpg' },
+  { eyebrow:'New Arrivals', title:'New products landing every week', desc:'Join our Viber community to be the first to know when new stock arrives.', cta:'Viber Community', icon:'🆕', img:'img/shipment.jpg', link: VIBER_COMMUNITY_LINK || '#' },
 ];
 
 /* ---------- State ---------- */
+(function migrateRecentSearches(){
+  try{
+    const old = localStorage.getItem('mazi_recent_searches');
+    if (old !== null){
+      const session = JSON.parse(localStorage.getItem('mazi_session') || 'null');
+      const id = session && session.email ? session.email.toLowerCase() : 'guest';
+      const key = 'mazi_recent_searches_' + id;
+      if (localStorage.getItem(key) === null){
+        localStorage.setItem(key, old);
+      }
+      localStorage.removeItem('mazi_recent_searches');
+    }
+  } catch(e){}
+})();
+
+function recentSearchesKey(){
+  const session = getSession();
+  const id = session && session.email ? session.email.toLowerCase() : 'guest';
+  return 'mazi_recent_searches_' + id;
+}
+function loadRecentSearches(){
+  try{ return JSON.parse(localStorage.getItem(recentSearchesKey()) || '[]'); }
+  catch(e){ return []; }
+}
+
 let state = {
   category: 'all',
   query: '',
   cart: JSON.parse(localStorage.getItem('mazi_cart') || '{}'),
-  recentSearches: JSON.parse(localStorage.getItem('mazi_recent_searches') || '[]'),
+  recentSearches: loadRecentSearches(),
 };
 
 /* ============ Helpers ============ */
@@ -82,7 +108,7 @@ function saveCart(){
 }
 
 function saveRecentSearches(){
-  localStorage.setItem('mazi_recent_searches', JSON.stringify(state.recentSearches));
+  localStorage.setItem(recentSearchesKey(), JSON.stringify(state.recentSearches));
 }
 
 function getRegisteredAccounts(){
@@ -104,12 +130,28 @@ function cartCount(){
   return Object.values(state.cart).reduce((s,q)=>s+q,0);
 }
 
-function showToast(msg){
+function showToast(msg, sub){
   const t = $('#toast');
-  t.textContent = msg;
+  const iconSvg = `<svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+  if (sub){
+    t.innerHTML = `<span class="toast-icon">${iconSvg}</span><span class="toast-text"><span class="toast-title"></span><span class="toast-sub"></span></span>`;
+    t.querySelector('.toast-title').textContent = msg;
+    t.querySelector('.toast-sub').textContent = sub;
+  } else {
+    t.innerHTML = `<span class="toast-icon">${iconSvg}</span><span class="toast-msg"></span>`;
+    t.querySelector('.toast-msg').textContent = msg;
+  }
+
+  // restart the icon pop each time
+  const icon = t.querySelector('.toast-icon');
+  icon.classList.remove('pop');
+  void icon.offsetWidth;
+  icon.classList.add('pop');
+
   t.classList.add('show');
   clearTimeout(showToast._timer);
-  showToast._timer = setTimeout(()=> t.classList.remove('show'), 1800);
+  showToast._timer = setTimeout(()=> t.classList.remove('show'), sub ? 2200 : 1800);
 }
 
 /* ============ Sidebar / category strip / pills ============ */
@@ -136,6 +178,55 @@ function renderCategoryNav(){
   // Position all three sliding highlights on the frame after render so
   // layout has settled (needed for accurate getBoundingClientRect reads).
   requestAnimationFrame(updateCategoryHighlights);
+  requestAnimationFrame(updateSidebarRail);
+}
+
+/* ============ Sidebar custom scrollbar (rail) ============ */
+function updateSidebarRail(){
+  const wrap = $('#sidebarScrollwrap');
+  const rail = $('#sidebarRail');
+  const track = $('#sidebarRailTrack');
+  const thumb = $('#sidebarRailThumb');
+  const upBtn = $('#sidebarRailUp');
+  const downBtn = $('#sidebarRailDown');
+  if (!wrap || !rail || !track || !thumb) return;
+
+  const scrollable = wrap.scrollHeight > wrap.clientHeight + 1;
+  rail.hidden = !scrollable;
+  if (!scrollable) return;
+
+  // Pin the rail's height to the list's own rendered height so the track
+  // never runs longer than the visible category list.
+  rail.style.height = wrap.clientHeight + 'px';
+
+  const trackHeight = track.clientHeight;
+  const thumbHeight = Math.max(24, (wrap.clientHeight / wrap.scrollHeight) * trackHeight);
+  const maxScroll = wrap.scrollHeight - wrap.clientHeight;
+  const maxThumbTop = trackHeight - thumbHeight;
+  const thumbTop = maxScroll > 0 ? (wrap.scrollTop / maxScroll) * maxThumbTop : 0;
+
+  thumb.style.height = thumbHeight + 'px';
+  thumb.style.top = thumbTop + 'px';
+
+  if (upBtn) upBtn.disabled = wrap.scrollTop <= 0;
+  if (downBtn) downBtn.disabled = wrap.scrollTop >= maxScroll - 1;
+}
+
+function initSidebarRail(){
+  const wrap = $('#sidebarScrollwrap');
+  const upBtn = $('#sidebarRailUp');
+  const downBtn = $('#sidebarRailDown');
+  if (!wrap) return;
+
+  wrap.addEventListener('scroll', updateSidebarRail, { passive:true });
+  window.addEventListener('resize', updateSidebarRail);
+
+  if (upBtn) upBtn.addEventListener('click', ()=>{
+    wrap.scrollBy({ top: -96, behavior: 'smooth' });
+  });
+  if (downBtn) downBtn.addEventListener('click', ()=>{
+    wrap.scrollBy({ top: 96, behavior: 'smooth' });
+  });
 }
 
 function positionHighlight(container, highlightEl, horizontal){
@@ -166,19 +257,24 @@ let heroIndex = 0;
 let heroTimer = null;
 
 function renderHero(){
-  $('#heroTrack').innerHTML = HERO_SLIDES.map(s => `
-    <div class="hero-slide">
+  $('#heroTrack').innerHTML = HERO_SLIDES.map(s => {
+    const isExternal = !!s.link && s.link !== '#';
+    const href = s.link || '#productGrid';
+    const target = isExternal ? ' target="_blank" rel="noopener"' : '';
+    return `
+    <div class="hero-slide" style="${s.img ? `background-image:url('${s.img}')` : ''}">
       <div class="hero-slide-content">
         <div class="hero-eyebrow">${s.eyebrow}</div>
         <h2 class="hero-title">${s.title}</h2>
         <p class="hero-desc">${s.desc}</p>
-        <a href="#productGrid" class="hero-cta">${s.cta}</a>
+        <a href="${href}" class="hero-cta"${target}>${s.cta}</a>
       </div>
       ${s.img
-        ? `<div class="hero-visual has-img"><img src="${s.img}" alt="${s.eyebrow}"></div>`
+        ? ``
         : `<div class="hero-visual">${s.icon}</div>`}
     </div>
-  `).join('');
+  `;
+  }).join('');
 
   $('#heroDots').innerHTML = HERO_SLIDES.map((_,i)=>`<button data-i="${i}" class="${i===0?'active':''}"></button>`).join('');
 
@@ -222,15 +318,21 @@ function cardActionHtml(p){
     </div>`;
   }
   return `<button class="card-add" data-id="${p.id}">
-    <svg viewBox="0 0 24 24"><path d="M6 6h15l-1.5 9h-12z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="9" cy="20" r="1.4" fill="currentColor"/><circle cx="17" cy="20" r="1.4" fill="currentColor"/></svg>
-    Add to Cart
+    <svg class="card-add-icon" viewBox="0 0 24 24"><path d="M6 6h15l-1.5 9h-12z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="9" cy="20" r="1.4" fill="currentColor"/><circle cx="17" cy="20" r="1.4" fill="currentColor"/></svg>
+    <span class="card-add-label">Add to Cart</span>
+    <span class="card-add-dots"><span></span><span></span><span></span></span>
   </button>`;
 }
 
 function bindCardSlot(el){
   if (!el) return;
   if (el.classList.contains('card-add')){
-    el.addEventListener('click', (e)=>{ e.stopPropagation(); addToCart(el.dataset.id); });
+    el.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      if (el.classList.contains('loading')) return;
+      el.classList.add('loading');
+      setTimeout(()=>{ addToCart(el.dataset.id); }, 1500);
+    });
   } else if (el.classList.contains('card-qty')){
     const id = el.dataset.id;
     el.querySelectorAll('.qty-btn').forEach(b=>{
@@ -346,13 +448,61 @@ function renderProductDetail(p){
 }
 
 function renderSimilarProducts(p){
-  const similar = PRODUCTS.filter(x => x.cat === p.cat && x.id !== p.id).slice(0, 4);
+  const similar = PRODUCTS.filter(x => x.cat === p.cat && x.id !== p.id).slice(0, 8);
   const section = $('#similarProductsSection');
   if (!similar.length){ section.hidden = true; return; }
   section.hidden = false;
   $('#similarProductsGrid').innerHTML = similar.map(x => productCardHtml(x)).join('');
   $$('#similarProductsGrid .card-add, #similarProductsGrid .card-qty').forEach(bindCardSlot);
   bindProductCardClicks($('#similarProductsGrid'));
+  $('#similarProductsGrid').scrollLeft = 0;
+  updateSimilarCarouselArrows();
+}
+function updateSimilarCarouselArrows(){
+  const track = $('#similarProductsGrid');
+  const prevBtn = $('#similarPrevBtn');
+  const nextBtn = $('#similarNextBtn');
+  if (!track || !prevBtn || !nextBtn) return;
+  prevBtn.disabled = track.scrollLeft <= 4;
+  nextBtn.disabled = track.scrollLeft >= track.scrollWidth - track.clientWidth - 4;
+}
+function scrollSimilarCarousel(dir){
+  const track = $('#similarProductsGrid');
+  if (!track) return;
+  const card = track.querySelector('.product-card');
+  const step = card ? card.getBoundingClientRect().width + 16 : 220;
+  track.scrollBy({ left: dir * step * 2, behavior: 'smooth' });
+}
+
+function renderOtherProducts(p){
+  const pool = shuffleArray(PRODUCTS.filter(x => x.cat !== p.cat && x.id !== p.id));
+  state.otherProductsPool = pool;
+  state.otherProductsShown = [];
+  const section = $('#otherProductsSection');
+  if (!pool.length){ section.hidden = true; return; }
+  section.hidden = false;
+  $('#otherProductsGrid').innerHTML = '';
+  loadMoreOtherProducts();
+}
+function loadMoreOtherProducts(){
+  const pool = state.otherProductsPool || [];
+  const shown = state.otherProductsShown || [];
+  const next = pool.filter(x => !shown.includes(x.id)).slice(0, 4);
+  if (!next.length) return;
+  state.otherProductsShown = shown.concat(next.map(x=>x.id));
+  $('#otherProductsGrid').insertAdjacentHTML('beforeend', next.map(x => productCardHtml(x)).join(''));
+  $$('#otherProductsGrid .card-add, #otherProductsGrid .card-qty').forEach(bindCardSlot);
+  bindProductCardClicks($('#otherProductsGrid'));
+  const remaining = pool.length - state.otherProductsShown.length;
+  $('#otherProductsSeeAllBtn').hidden = remaining <= 0;
+}
+function shuffleArray(arr){
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
 }
 
 function openProductView(id){
@@ -360,6 +510,8 @@ function openProductView(id){
   if (!p) return;
   renderProductDetail(p);
   renderSimilarProducts(p);
+  renderOtherProducts(p);
+  closeOtherFullScreenViews('productView');
   $('#productView').classList.add('open');
   document.body.style.overflow = 'hidden';
   $('#productView').scrollTop = 0;
@@ -369,6 +521,18 @@ function closeProductView(){
   document.body.style.overflow = '';
 }
 
+// Only one full-screen .profile-view panel (Profile / My Orders / Product
+// detail) should be open at a time — they all share the same z-index, and
+// #productView sits later in the DOM, so if it's left open it silently
+// paints over Profile/Orders when those are opened from within it.
+function closeOtherFullScreenViews(exceptId){
+  ['profileView','ordersView','productView'].forEach(id=>{
+    if (id === exceptId) return;
+    const el = $('#' + id);
+    if (el) el.classList.remove('open');
+  });
+}
+
 /* ============ Cart logic ============ */
 function addToCart(id){
   state.cart[id] = (state.cart[id] || 0) + 1;
@@ -376,7 +540,7 @@ function addToCart(id){
   updateCartUI();
   refreshCardSlot(id);
   const p = PRODUCTS.find(p=>p.id===id);
-  showToast(`${p.name} added to cart`);
+  showToast(p.name, 'Added to cart');
 }
 
 function changeQty(id, delta){
@@ -397,12 +561,10 @@ function removeFromCart(id){
 
 function updateCartUI(){
   const count = cartCount();
-  $('#cartCount').textContent = count;
-  $('#cartCount').style.display = count>0 ? 'flex' : 'none';
-
-  const bnBadge = $('#bnCartCount');
-  bnBadge.textContent = count;
-  bnBadge.style.display = count>0 ? 'flex' : 'none';
+  $$('.js-cart-count').forEach(el=>{
+    el.textContent = count;
+    el.style.display = count>0 ? 'flex' : 'none';
+  });
 
   const ids = Object.keys(state.cart);
   if (ids.length===0){
@@ -475,30 +637,36 @@ function getSession(){
 }
 function setSession(data){
   localStorage.setItem('mazi_session', JSON.stringify(data));
+  state.recentSearches = loadRecentSearches();
+  refreshOpenSearchPanel();
   renderAuthButton();
 }
 function clearSession(){
   localStorage.removeItem('mazi_session');
+  state.recentSearches = loadRecentSearches();
+  refreshOpenSearchPanel();
   renderAuthButton();
+}
+function refreshOpenSearchPanel(){
+  const panel = $('#mobileSearchPanel');
+  if (panel && panel.classList.contains('open')){
+    renderMobileSearchBody($('#mobileSearchInput').value);
+  }
 }
 function renderAuthButton(){
   const session = getSession();
-  const loginBtn = $('#loginBtn');
-  const profileWrap = $('#profileWrap');
-  if (session){
-    loginBtn.hidden = true;
-    profileWrap.hidden = false;
-  } else {
-    loginBtn.hidden = false;
-    profileWrap.hidden = true;
-    closeProfileDropdown();
-  }
+  $$('.js-login-btn').forEach(btn=>{ btn.hidden = !!session; });
+  $$('.js-profile-wrap').forEach(wrap=>{ wrap.hidden = !session; });
+  if (!session) closeProfileDropdown();
 }
-function toggleProfileDropdown(){
-  $('#profileDropdown').classList.toggle('open');
+function toggleProfileDropdown(dropdown){
+  $$('.profile-dropdown').forEach(d=>{
+    if (d !== dropdown) d.classList.remove('open');
+  });
+  dropdown.classList.toggle('open');
 }
 function closeProfileDropdown(){
-  $('#profileDropdown').classList.remove('open');
+  $$('.profile-dropdown').forEach(d=> d.classList.remove('open'));
 }
 function openProfileMenu(){
   $('#profileMenuBackdrop').classList.add('show');
@@ -507,6 +675,20 @@ function openProfileMenu(){
 function closeProfileMenu(){
   $('#profileMenuBackdrop').classList.remove('show');
   $('#profileMenu').classList.remove('open');
+}
+
+/* ============ Viber chat bubble popup ============ */
+function openViberPopup(){
+  $('#viberPopupBackdrop').classList.add('show');
+  $('#viberPopup').classList.add('open');
+  $('#viberFab').classList.add('is-open');
+  $('#viberFab').setAttribute('aria-expanded','true');
+}
+function closeViberPopup(){
+  $('#viberPopupBackdrop').classList.remove('show');
+  $('#viberPopup').classList.remove('open');
+  $('#viberFab').classList.remove('is-open');
+  $('#viberFab').setAttribute('aria-expanded','false');
 }
 
 /* ============ Auth loading (3-dot) ============ */
@@ -593,7 +775,7 @@ function orderStatusIndex(order){
   return idx;
 }
 
-function placeOrder(){
+function placeOrder(customer){
   const ids = Object.keys(state.cart);
   if (ids.length === 0) return null;
 
@@ -606,7 +788,7 @@ function placeOrder(){
 
   const orders = getOrders();
   const orderNo = `MZ${new Date().getFullYear()}${String(orders.length+1).padStart(4,'0')}`;
-  const order = { id:orderNo, placedAt:Date.now(), items, total };
+  const order = { id:orderNo, placedAt:Date.now(), items, total, customer: customer || null };
   orders.unshift(order);
   saveOrders(orders);
 
@@ -639,10 +821,65 @@ function renderOrderStatus(order){
 }
 
 function orderStatusBadge(order){
+  if (order.cancelled) return `<span class="order-status-badge cancelled">Cancelled</span>`;
   const idx = orderStatusIndex(order);
   const step = ORDER_STEPS[idx];
   const cls = idx===0?'placed':idx===1?'processing':idx===2?'delivery':'delivered';
   return `<span class="order-status-badge ${cls}">${step.label}</span>`;
+}
+
+function canCancelOrder(order){
+  return !order.cancelled && orderStatusIndex(order) === 0;
+}
+function showCancelButton(order){
+  return !order.cancelled && orderStatusIndex(order) < ORDER_STEPS.length - 1;
+}
+
+/* ============ Delivered-order notifications ============ */
+function isDelivered(order){
+  return !order.cancelled && orderStatusIndex(order) === ORDER_STEPS.length - 1;
+}
+function getUnseenDeliveredCount(){
+  return getOrders().filter(o => isDelivered(o) && !o.deliveredSeen).length;
+}
+function markDeliveredOrdersSeen(){
+  const orders = getOrders();
+  let changed = false;
+  orders.forEach(o=>{
+    if (isDelivered(o) && !o.deliveredSeen){ o.deliveredSeen = true; changed = true; }
+  });
+  if (changed) saveOrders(orders);
+  return changed;
+}
+function updateOrdersNotifBadge(){
+  const count = getUnseenDeliveredCount();
+  const badge = $('#bnOrdersCount');
+  if (badge){
+    badge.textContent = count;
+    badge.hidden = count === 0;
+  }
+  $$('.js-profile-orders-btn, #pmOrdersBtn').forEach(el=>{
+    el.classList.toggle('has-notif', count > 0);
+  });
+}
+
+function cancelOrder(orderId){
+  const orders = getOrders();
+  const order = orders.find(o=> o.id === orderId);
+  if (!order) return;
+  order.cancelled = true;
+  saveOrders(orders);
+  renderOrdersView();
+  showToast('Order cancelled');
+}
+
+function openCancelOrderConfirm(orderId){
+  openConfirmModal({
+    title: 'Cancel this order?',
+    sub: "This order hasn't been approved yet. Once cancelled, this can't be undone.",
+    confirmLabel: 'Cancel Order',
+    onConfirm: ()=> withAuthLoading(()=> cancelOrder(orderId), 700),
+  });
 }
 
 function formatOrderDate(ts){
@@ -650,6 +887,8 @@ function formatOrderDate(ts){
 }
 
 function renderOrdersView(){
+  markDeliveredOrdersSeen();
+  updateOrdersNotifBadge();
   const orders = getOrders();
   $('#ordersCount').textContent = orders.length ? `${orders.length} order${orders.length!==1?'s':''}` : '';
 
@@ -697,17 +936,39 @@ function renderOrdersView(){
             <span class="label">Order Total</span>
             <span class="value">${fmt(order.total)}</span>
           </div>
-          <div class="order-steps">
-            ${renderOrderStatus(order)}
+          <div class="order-receipt-row">
+            <button type="button" class="order-receipt-btn" data-receipt-order="${order.id}">
+              <svg viewBox="0 0 24 24"><path d="M6 2h9l3 3v17l-2.5-1.5L13 22l-2.5-1.5L8 22l-2-12.5V2z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 8h8M8 12h8M8 16h5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+              View Receipt
+            </button>
           </div>
+          ${order.cancelled ? `
+            <div class="order-cancelled-note">This order was cancelled.</div>
+          ` : `
+            <div class="order-steps">
+              ${renderOrderStatus(order)}
+            </div>
+          `}
+          ${showCancelButton(order) ? `
+            <div class="order-cancel-row">
+              <button type="button" class="order-cancel-btn" data-cancel-order="${order.id}" ${canCancelOrder(order) ? '' : 'disabled'}>Cancel Order</button>
+            </div>
+          ` : ''}
         </div>
       `).join('')}
     </div>
   `;
+  $$('[data-cancel-order]').forEach(btn=>{
+    btn.addEventListener('click', ()=> openCancelOrderConfirm(btn.dataset.cancelOrder));
+  });
+  $$('[data-receipt-order]').forEach(btn=>{
+    btn.addEventListener('click', ()=> openReceiptModal(btn.dataset.receiptOrder));
+  });
 }
 
 function openOrdersView(){
   renderOrdersView();
+  closeOtherFullScreenViews('ordersView');
   $('#ordersView').classList.add('open');
   document.body.style.overflow = 'hidden';
   clearInterval(openOrdersView._timer);
@@ -717,6 +978,303 @@ function closeOrdersView(){
   $('#ordersView').classList.remove('open');
   document.body.style.overflow = '';
   clearInterval(openOrdersView._timer);
+}
+
+/* ============ Order Confirmation (shown right after checkout, before admin processes) ============ */
+function openOrderConfirmModal(order){
+  const session = getSession() || {};
+  const customer = order.customer || {};
+  const firstName = (customer.name || '').split(' ')[0] || session.firstName || session.name || 'there';
+  const itemCount = order.items.reduce((s,it)=> s + it.qty, 0);
+
+  $('#ocSub').textContent = `Hi ${firstName}, your order for ${itemCount} product${itemCount!==1?'s':''} has been received and is now pending confirmation from our team.`;
+
+  $('#ocItems').innerHTML = order.items.map((it,i) => `
+    ${i>0 ? '<div class="oc-item-divider"></div>' : ''}
+    <div class="oc-item-row">
+      <div class="oc-item-media"><img src="img/products/${it.id}.png" alt="${it.name}" onerror="this.classList.add('img-missing')"></div>
+      <div class="oc-item-info">
+        <div class="oc-item-name">${it.name}</div>
+        <div class="oc-item-meta">${it.pack} &middot; Qty ${it.qty}</div>
+      </div>
+      <div class="oc-item-price">${fmt(it.price * it.qty)}</div>
+    </div>
+  `).join('');
+
+  $('#ocTotals').innerHTML = `
+    <div class="oc-total-row"><span>Subtotal</span><span>${fmt(order.total)}</span></div>
+    <div class="oc-total-row"><span>Delivery Fee</span><span>To be confirmed</span></div>
+    <div class="oc-total-row oc-grand"><span>Order Total</span><span>${fmt(order.total)}</span></div>
+  `;
+
+  const contact = customer.mobile || session.mobile || session.email || '—';
+  const loc = customer.location;
+  const locationHtml = (loc && loc.mapUrl)
+    ? `${loc.address ? `${loc.address}<br>` : ''}<a href="${loc.mapUrl}" target="_blank" rel="noopener" class="oc-map-link">View pinned location ↗</a>`
+    : (session.city || '—');
+
+  $('#ocDetails').innerHTML = `
+    <div><div class="oc-detail-key">Order ID</div><div class="oc-detail-val">${order.id}</div></div>
+    <div><div class="oc-detail-key">Order Date</div><div class="oc-detail-val">${formatOrderDate(order.placedAt)}</div></div>
+    <div><div class="oc-detail-key">Status</div><div class="oc-detail-val">Pending Confirmation</div></div>
+    <div><div class="oc-detail-key">Contact</div><div class="oc-detail-val">${contact}</div></div>
+    <div><div class="oc-detail-key">Delivery To</div><div class="oc-detail-val">${locationHtml}</div></div>
+  `;
+
+  $('#ocBackdrop').classList.add('show');
+  $('#ocModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeOrderConfirmModal(){
+  $('#ocBackdrop').classList.remove('show');
+  $('#ocModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+/* ============ Checkout Details (name / mobile / location, asked right before placing the order) ============ */
+let _cdMap = null;
+let _cdMarker = null;
+let _cdPin = null; // { lat, lng }
+const CD_MAP_DEFAULT_CENTER = [4.1755, 73.5093]; // Male', Maldives
+const CD_MAP_DEFAULT_ZOOM = 13;
+
+function initCdMap(){
+  if (_cdMap || typeof L === 'undefined') return;
+  _cdMap = L.map('cdMap', { attributionControl:false }).setView(CD_MAP_DEFAULT_CENTER, CD_MAP_DEFAULT_ZOOM);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+  }).addTo(_cdMap);
+  L.control.attribution({ prefix:false }).addTo(_cdMap);
+
+  _cdMap.on('click', e=> setCdPin(e.latlng.lat, e.latlng.lng));
+}
+
+function setCdPin(lat, lng){
+  _cdPin = { lat, lng };
+  if (!_cdMarker){
+    _cdMarker = L.marker([lat, lng], { draggable:true }).addTo(_cdMap);
+    _cdMarker.on('dragend', ()=>{
+      const pos = _cdMarker.getLatLng();
+      _cdPin = { lat: pos.lat, lng: pos.lng };
+      updateCdMapHint();
+    });
+  } else {
+    _cdMarker.setLatLng([lat, lng]);
+  }
+  updateCdMapHint();
+  $('#cdLocationField').classList.remove('pin-error');
+  $('#cdPinError').hidden = true;
+}
+
+function clearCdPin(){
+  _cdPin = null;
+  if (_cdMarker){
+    _cdMap.removeLayer(_cdMarker);
+    _cdMarker = null;
+  }
+  updateCdMapHint();
+}
+
+function updateCdMapHint(){
+  const hint = $('#cdMapHint');
+  if (_cdPin){
+    hint.textContent = `Pin dropped ✓  (${_cdPin.lat.toFixed(5)}, ${_cdPin.lng.toFixed(5)})`;
+    hint.classList.add('pinned');
+  } else {
+    hint.textContent = 'Tap the map to drop a pin at your location';
+    hint.classList.remove('pinned');
+  }
+}
+
+function openCheckoutDetailsModal(){
+  const session = getSession() || {};
+  $('#cdName').value = [session.firstName, session.lastName].filter(Boolean).join(' ') || session.name || '';
+  $('#cdMobile').value = session.mobile || '';
+  $('#cdAddress').value = '';
+  clearCdPin();
+  ['cdNameField','cdMobileField'].forEach(id=>{
+    $('#'+id).classList.remove('has-error');
+  });
+  $('#cdLocationField').classList.remove('pin-error','address-error');
+  $('#cdPinError').hidden = true;
+  $('#cdAddressError').hidden = true;
+  $('#checkoutDetailsBackdrop').classList.add('show');
+  $('#checkoutDetailsModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+
+  initCdMap();
+  // Map container is laid out only once its wrapper becomes visible/sized,
+  // so give the open transition a moment then force Leaflet to recalc size.
+  setTimeout(()=>{ if (_cdMap) _cdMap.invalidateSize(); }, 250);
+}
+function closeCheckoutDetailsModal(){
+  $('#checkoutDetailsBackdrop').classList.remove('show');
+  $('#checkoutDetailsModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+/* ============ Receipt (view / print / save as PDF) ============ */
+const RECEIPT_SIZES = {
+  '58mm':  { label:'58mm',  page:'58mm auto',   width:'58mm'  },
+  '80mm':  { label:'80mm',  page:'80mm auto',   width:'80mm'  },
+  'a5':    { label:'A5',    page:'A5 portrait', width:'148mm' },
+  'a4':    { label:'A4',    page:'A4 portrait', width:'210mm' },
+  'letter':{ label:'Letter',page:'letter portrait', width:'216mm' },
+};
+let _receiptOrderId = null;
+let _receiptSize = '80mm';
+
+function receiptStoreInfo(){
+  return {
+    name: 'MAZI General Trading',
+    addr: "Male', Republic of Maldives",
+    email: 'info@mazitrading.mv',
+  };
+}
+
+function renderReceiptContent(order){
+  const store = receiptStoreInfo();
+  return `
+    <div class="receipt-store-name">${store.name}</div>
+    <div class="receipt-store-addr">${store.addr}</div>
+    <div class="receipt-store-addr">${store.email}</div>
+    <div class="receipt-divider"></div>
+    <div class="receipt-meta-row"><span>Order #</span><span>${order.id}</span></div>
+    <div class="receipt-meta-row"><span>Date</span><span>${formatOrderDate(order.placedAt)}</span></div>
+    <div class="receipt-meta-row"><span>Status</span><span>${order.cancelled ? 'Cancelled' : ORDER_STEPS[orderStatusIndex(order)].label}</span></div>
+    <div class="receipt-divider"></div>
+    <div class="receipt-items">
+      ${order.items.map(it => `
+        <div class="receipt-item">
+          <div class="receipt-item-name">${it.name}</div>
+          <div class="receipt-item-sub">
+            <span>${it.pack} &times; ${it.qty} @ ${fmt(it.price)}</span>
+            <span>${fmt(it.price * it.qty)}</span>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+    <div class="receipt-divider"></div>
+    <div class="receipt-total-row">
+      <span>Total</span>
+      <span>${fmt(order.total)}</span>
+    </div>
+    <div class="receipt-divider"></div>
+    <div class="receipt-footer">Thank you for shopping with us!</div>
+    <div class="receipt-footer-small">This is a computer-generated receipt.</div>
+  `;
+}
+
+function selectReceiptSize(sizeKey){
+  if (!RECEIPT_SIZES[sizeKey]) return;
+  _receiptSize = sizeKey;
+  const cfg = RECEIPT_SIZES[sizeKey];
+  const isWide = sizeKey === 'a4' || sizeKey === 'a5' || sizeKey === 'letter';
+  $('#receiptPaper').style.width = cfg.width;
+  $('#receiptPaper').className = `receipt-paper receipt-size-${sizeKey}`;
+  $('#receiptModal .receipt-modal-card').classList.toggle('receipt-modal-wide', isWide);
+  $$('.receipt-size-btn').forEach(btn=>{
+    btn.classList.toggle('active', btn.dataset.size === sizeKey);
+  });
+  requestAnimationFrame(fitReceiptPaper);
+}
+
+function fitReceiptPaper(){
+  const scroll = $('#receiptPreviewScroll');
+  const wrap = $('#receiptPaperWrap');
+  const paper = $('#receiptPaper');
+  if (!scroll || !paper) return;
+  paper.style.transform = 'none';
+  const availWidth = scroll.clientWidth - 24; // account for scroll padding
+  const naturalWidth = paper.offsetWidth;
+  const naturalHeight = paper.offsetHeight;
+  // Thermal receipts (58mm/80mm) are physically tiny, so scale them UP to
+  // comfortably fill the preview instead of showing true-to-life mm size.
+  // A4/A5/Letter are the opposite problem (too wide) so we still shrink
+  // those down to fit. Either way we just fit the available width, capped
+  // so it never blows up into blurry oversized text.
+  const scale = Math.min(2.4, availWidth / naturalWidth);
+  paper.style.transform = `scale(${scale})`;
+  wrap.style.height = (naturalHeight * scale) + 'px';
+}
+
+function openReceiptModal(orderId){
+  const orders = getOrders();
+  const order = orders.find(o=> o.id === orderId);
+  if (!order) return;
+  _receiptOrderId = orderId;
+  $('#receiptContent').innerHTML = renderReceiptContent(order);
+  selectReceiptSize(_receiptSize);
+  $('#receiptBackdrop').classList.add('show');
+  $('#receiptModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeReceiptModal(){
+  $('#receiptBackdrop').classList.remove('show');
+  $('#receiptModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function printReceipt(){
+  const cfg = RECEIPT_SIZES[_receiptSize];
+  let styleTag = document.getElementById('receiptPrintStyle');
+  if (!styleTag){
+    styleTag = document.createElement('style');
+    styleTag.id = 'receiptPrintStyle';
+    document.head.appendChild(styleTag);
+  }
+  styleTag.textContent = `@page{ size:${cfg.page}; margin:${_receiptSize==='58mm'||_receiptSize==='80mm' ? '2mm' : '12mm'}; }`;
+  window.print();
+}
+
+function buildReceiptStandaloneHtml(order){
+  const cfg = RECEIPT_SIZES[_receiptSize];
+  const isThermal = _receiptSize === '58mm' || _receiptSize === '80mm';
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Receipt - Order #${order.id}</title>
+<style>
+  @page{ size:${cfg.page}; margin:${isThermal ? '2mm' : '12mm'}; }
+  *{box-sizing:border-box;}
+  body{margin:0;background:#F8F7F2;font-family:'Courier New',Courier,monospace;color:#16211C;display:flex;justify-content:center;padding:24px 12px;}
+  .receipt-paper{background:#fff;width:${cfg.width};max-width:100%;box-shadow:0 2px 10px rgba(15,58,46,.14);padding:${isThermal ? '18px 16px' : '28px 26px'};}
+  .receipt-store-name{font-size:14px;font-weight:700;text-align:center;letter-spacing:.02em;}
+  .receipt-store-addr{font-size:10.5px;text-align:center;color:#5C6B63;margin-top:2px;}
+  .receipt-divider{border-top:1px dashed #b9b6a9;margin:10px 0;}
+  .receipt-meta-row{display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px;}
+  .receipt-items{display:flex;flex-direction:column;gap:8px;}
+  .receipt-item-name{font-size:11.5px;font-weight:700;}
+  .receipt-item-sub{display:flex;justify-content:space-between;font-size:11px;color:#5C6B63;margin-top:1px;}
+  .receipt-total-row{display:flex;justify-content:space-between;font-size:13.5px;font-weight:700;}
+  .receipt-footer{font-size:11.5px;text-align:center;font-weight:700;margin-top:2px;}
+  .receipt-footer-small{font-size:9.5px;text-align:center;color:#5C6B63;margin-top:3px;}
+  @media print{ body{background:#fff;padding:0;} .receipt-paper{box-shadow:none;margin:0 auto;} }
+</style>
+</head>
+<body>
+  <div class="receipt-paper">${renderReceiptContent(order)}</div>
+</body>
+</html>`;
+}
+
+function downloadReceipt(){
+  const orders = getOrders();
+  const order = orders.find(o=> o.id === _receiptOrderId);
+  if (!order) return;
+  const html = buildReceiptStandaloneHtml(order);
+  const blob = new Blob([html], { type:'text/html' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `receipt-${order.id}-${_receiptSize}.html`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  showToast('Receipt downloaded');
 }
 
 /* ============ Profile page ============ */
@@ -729,6 +1287,7 @@ function openProfileView(){
   $('#pvCurrentPassword').value = '';
   $('#pvNewPassword').value = '';
   $('#pvConfirmPassword').value = '';
+  closeOtherFullScreenViews('profileView');
   $('#profileView').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
@@ -936,6 +1495,7 @@ function renderMobileSearchBody(rawValue){
 function openMobileSearch(){
   $('#mobileSearchPanel').classList.add('open');
   $('#mobileSearchBackdrop').classList.add('show');
+  document.body.style.overflow = 'hidden';
   const current = $('#searchInput').value || '';
   $('#mobileSearchInput').value = current;
   renderMobileSearchBody(current);
@@ -945,6 +1505,7 @@ function openMobileSearch(){
 function closeMobileSearch(){
   $('#mobileSearchPanel').classList.remove('open');
   $('#mobileSearchBackdrop').classList.remove('show');
+  document.body.style.overflow = '';
 }
 
 /* ============ Navbar hide on scroll + sidebar pin ============ */
@@ -958,12 +1519,12 @@ function closeMobileSearch(){
 function initNavScroll(){
   const nav = $('.navbar');
   const root = document.documentElement;
-  const gap = 14; // breathing room below the navbar when it's visible
+  const gap = 8; // breathing room below the navbar when it's visible
 
   function setOffset(){
     const hidden = nav.classList.contains('nav-hidden');
     const rawH = hidden ? 0 : nav.offsetHeight;
-    const h = hidden ? 12 : rawH + gap;
+    const h = hidden ? 20 : rawH + gap;
     root.style.setProperty('--nav-offset', h + 'px');
     root.style.setProperty('--nav-flush', rawH + 'px');
     return h;
@@ -971,39 +1532,20 @@ function initNavScroll(){
 
   let lastY = window.scrollY;
   let ticking = false;
-  let syncing = false;
-
-  // Runs setOffset() every frame for the duration of the navbar's own
-  // CSS transition (~280ms) so the sticky categories bar tracks the
-  // real, currently-animating navbar height instead of jumping straight
-  // to the old or new value. Without this it only updated at the very
-  // start or very end of the shrink/grow animation, which looked like a
-  // sudden squeeze/jiggle right as it crossed the compact threshold.
-  function syncOffsetDuringTransition(){
-    if (syncing) return;
-    syncing = true;
-    const start = performance.now();
-    function frame(now){
-      setOffset();
-      if (now - start < 320){
-        requestAnimationFrame(frame);
-      } else {
-        syncing = false;
-      }
-    }
-    requestAnimationFrame(frame);
-  }
 
   function tick(){
     const currentY = window.scrollY;
     const isMobile = window.innerWidth <= 980;
-    let changed = false;
 
     const wasHidden = nav.classList.contains('nav-hidden');
-    const shouldHide = !isMobile && currentY > lastY && currentY > 80;
+    const shouldHide = !isMobile && currentY > lastY && currentY > 4;
     if (shouldHide !== wasHidden){
       nav.classList.toggle('nav-hidden', shouldHide);
-      changed = true;
+      // Hiding/showing the navbar only moves it (transform), it doesn't
+      // change its own box size, so ResizeObserver never fires for this —
+      // update the offset by hand or the sticky categories sidebar is left
+      // pinned to where the navbar used to be, leaving a blank gap above it.
+      setOffset();
     }
 
     // Hysteresis on the compact toggle: enter compact only past 60px,
@@ -1017,15 +1559,23 @@ function initNavScroll(){
     else if (wasCompact && currentY < 12) isCompact = false;
     if (isCompact !== wasCompact){
       nav.classList.toggle('nav-compact', isCompact);
-      changed = true;
     }
 
     lastY = currentY;
-    if (changed) syncOffsetDuringTransition();
     ticking = false;
   }
 
   setOffset();
+
+  // Keep --nav-offset/--nav-flush glued to the navbar's real, current
+  // height at all times, including mid-transition. A ResizeObserver fires
+  // on every actual layout change the navbar goes through (each frame of
+  // the compact-mode shrink/grow), so the sticky categories bar below it
+  // never reads a stale height — no more guessing how long the CSS
+  // transition takes.
+  if ('ResizeObserver' in window){
+    new ResizeObserver(setOffset).observe(nav);
+  }
 
   window.addEventListener('scroll', ()=>{
     if (ticking) return;
@@ -1046,8 +1596,11 @@ function init(){
   renderProducts();
   updateCartUI();
   initNavScroll();
+  initSidebarRail();
 
-  $('#cartBtn').addEventListener('click', openCart);
+  updateOrdersNotifBadge();
+  setInterval(updateOrdersNotifBadge, 20000);
+
   $('#closeCart').addEventListener('click', closeCart);
   $('#drawerBackdrop').addEventListener('click', closeCart);
   $('#checkoutBtn').addEventListener('click', ()=>{
@@ -1058,36 +1611,109 @@ function init(){
       openLogin();
       return;
     }
-    const order = placeOrder();
-    renderProducts();
     closeCart();
-    showToast(`Order #${order.id} placed successfully!`);
-    openOrdersView();
+    openCheckoutDetailsModal();
+  });
+
+  $('#checkoutDetailsBackdrop').addEventListener('click', closeCheckoutDetailsModal);
+  $('#checkoutDetailsCloseBtn').addEventListener('click', closeCheckoutDetailsModal);
+  $('#checkoutDetailsForm').addEventListener('submit', e=>{
+    e.preventDefault();
+
+    const name = $('#cdName').value.trim();
+    const mobile = $('#cdMobile').value.trim();
+    const address = $('#cdAddress').value.trim();
+
+    const nameOk = name.length > 0;
+    const mobileOk = /^[0-9+\-\s]{6,}$/.test(mobile);
+    const pinOk = !!_cdPin;
+    const addressOk = address.length >= 5;
+
+    $('#cdNameField').classList.toggle('has-error', !nameOk);
+    $('#cdMobileField').classList.toggle('has-error', !mobileOk);
+    $('#cdLocationField').classList.toggle('pin-error', !pinOk);
+    $('#cdLocationField').classList.toggle('address-error', !addressOk);
+    $('#cdNameError').hidden = nameOk;
+    $('#cdMobileError').hidden = mobileOk;
+    $('#cdPinError').hidden = pinOk;
+    $('#cdAddressError').hidden = addressOk;
+
+    if (!nameOk || !mobileOk || !pinOk || !addressOk) return;
+
+    const location = {
+      lat: _cdPin.lat,
+      lng: _cdPin.lng,
+      mapUrl: `https://www.google.com/maps?q=${_cdPin.lat},${_cdPin.lng}`,
+      address,
+    };
+
+    closeCheckoutDetailsModal();
+    withAuthLoading(()=>{
+      const order = placeOrder({ name, mobile, location });
+      if (!order) return;
+      renderProducts();
+      openOrderConfirmModal(order);
+    }, 2000);
+  });
+  ['cdName','cdMobile'].forEach(id=>{
+    const el = $('#'+id);
+    const clearError = ()=> $('#'+id+'Field').classList.remove('has-error');
+    el.addEventListener('input', clearError);
+    el.addEventListener('change', clearError);
+  });
+  $('#cdAddress').addEventListener('input', ()=>{
+    $('#cdLocationField').classList.remove('address-error');
+    $('#cdAddressError').hidden = true;
   });
 
   $('#closeMenu').addEventListener('click', closeMenu);
   $('#menuBackdrop').addEventListener('click', closeMenu);
 
+  $('#viberFab').addEventListener('click', ()=>{
+    $('#viberPopup').classList.contains('open') ? closeViberPopup() : openViberPopup();
+  });
+  $('#viberPopupClose').addEventListener('click', closeViberPopup);
+  $('#viberPopupBackdrop').addEventListener('click', closeViberPopup);
+
   $('#loginBtn').addEventListener('click', openLogin);
   renderAuthButton();
-  $('#profileBtn').addEventListener('click', e=>{
-    e.stopPropagation();
-    toggleProfileDropdown();
+
+  // Cart, login, offers, search, and profile buttons — bound generically so
+  // the same actions work from the main navbar and from the profile/orders/
+  // product view topbars.
+  $$('.js-cart-btn').forEach(btn=> btn.addEventListener('click', openCart));
+  $$('.js-login-btn').forEach(btn=> btn.addEventListener('click', openLogin));
+  $$('.js-offers-btn').forEach(btn=> btn.addEventListener('click', ()=> showToast('No offers saved yet')));
+  $$('.js-search-btn').forEach(btn=> btn.addEventListener('click', openMobileSearch));
+  $$('.js-profile-toggle').forEach(btn=>{
+    btn.addEventListener('click', e=>{
+      e.stopPropagation();
+      const dropdown = btn.parentElement.querySelector('.profile-dropdown');
+      toggleProfileDropdown(dropdown);
+    });
   });
   document.addEventListener('click', e=>{
-    if (!$('#profileWrap').contains(e.target)) closeProfileDropdown();
+    $$('.js-profile-wrap').forEach(wrap=>{
+      if (!wrap.contains(e.target)) wrap.querySelector('.profile-dropdown').classList.remove('open');
+    });
   });
-  $('#profileOrdersBtn').addEventListener('click', ()=>{
-    closeProfileDropdown();
-    openOrdersView();
+  $$('.js-profile-orders-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      closeProfileDropdown();
+      openOrdersView();
+    });
   });
-  $('#profileProfileBtn').addEventListener('click', ()=>{
-    closeProfileDropdown();
-    openProfileView();
+  $$('.js-profile-profile-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      closeProfileDropdown();
+      openProfileView();
+    });
   });
-  $('#profileLogoutBtn').addEventListener('click', ()=>{
-    closeProfileDropdown();
-    openLogoutConfirm();
+  $$('.js-profile-logout-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      closeProfileDropdown();
+      openLogoutConfirm();
+    });
   });
 
   $('#closeProfileMenu').addEventListener('click', closeProfileMenu);
@@ -1105,7 +1731,6 @@ function init(){
     openLogoutConfirm();
   });
   $('#wishlistBtn').addEventListener('click', ()=> showToast('No offers saved yet'));
-  $('#navOffersBtn').addEventListener('click', ()=> showToast('No offers saved yet'));
 
   // Footer links
   $$('[data-footer-cat]').forEach(link=>{
@@ -1126,6 +1751,24 @@ function init(){
 
   $('#logoutCancelBtn').addEventListener('click', closeLogoutConfirm);
   $('#logoutConfirmBackdrop').addEventListener('click', closeLogoutConfirm);
+
+  $('#receiptCloseBtn').addEventListener('click', closeReceiptModal);
+  $('#receiptBackdrop').addEventListener('click', closeReceiptModal);
+  $('#receiptDownloadBtn').addEventListener('click', downloadReceipt);
+  $('#receiptPrintBtn').addEventListener('click', printReceipt);
+
+  $('#ocCloseBtn').addEventListener('click', closeOrderConfirmModal);
+  $('#ocBackdrop').addEventListener('click', closeOrderConfirmModal);
+  $('#ocOrdersBtn').addEventListener('click', ()=>{
+    closeOrderConfirmModal();
+    openOrdersView();
+  });
+  $$('.receipt-size-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=> selectReceiptSize(btn.dataset.size));
+  });
+  window.addEventListener('resize', ()=>{
+    if ($('#receiptModal').classList.contains('open')) fitReceiptPaper();
+  });
   $('#logoutConfirmBtn').addEventListener('click', ()=>{
     closeLogoutConfirm();
     if (_confirmAction) _confirmAction();
@@ -1133,12 +1776,20 @@ function init(){
 
   $('#profileViewClose').addEventListener('click', closeProfileView);
   $('#productViewClose').addEventListener('click', closeProductView);
+  $('#otherProductsSeeAllBtn').addEventListener('click', loadMoreOtherProducts);
+  $('#similarPrevBtn').addEventListener('click', ()=> scrollSimilarCarousel(-1));
+  $('#similarNextBtn').addEventListener('click', ()=> scrollSimilarCarousel(1));
+  $('#similarProductsGrid').addEventListener('scroll', ()=> updateSimilarCarouselArrows());
   $('#pvSaveBtn').addEventListener('click', saveProfileView);
   $('#ordersViewClose').addEventListener('click', closeOrdersView);
   $('#pvDeleteAccountLink').addEventListener('click', e=>{
     e.preventDefault();
     closeProfileView();
     openDeleteAccountConfirm();
+  });
+  $('#pvLogoutBtn').addEventListener('click', ()=>{
+    closeProfileView();
+    openLogoutConfirm();
   });
   $('#catToggleBtn').addEventListener('click', openMenu);
 
@@ -1249,6 +1900,52 @@ function init(){
       else if (action==='orders') openOrdersView();
     });
   });
+
+  handleOpenParam();
+}
+
+/* ============ Deep-link actions (from legal pages, etc.) ============ */
+function handleOpenParam(){
+  const params = new URLSearchParams(window.location.search);
+  const open = params.get('open');
+  if (!open) return;
+
+  const isMobile = window.matchMedia('(max-width: 980px)').matches;
+
+  if (open === 'cart'){
+    openCart();
+  } else if (open === 'login'){
+    openLogin();
+  } else if (open === 'search'){
+    const q = params.get('q') || '';
+    if (q){
+      if (isMobile){
+        openMobileSearch();
+        $('#mobileSearchInput').value = q;
+        commitMobileSearch(q);
+      } else {
+        $('#searchInput').value = q;
+        handleSearch(q);
+        $('#searchInput').focus();
+        $('#productGrid')?.scrollIntoView({behavior:'smooth', block:'start'});
+      }
+    } else if (isMobile){
+      openMobileSearch();
+    } else {
+      $('#searchInput').focus();
+    }
+  } else if (open === 'offers'){
+    showToast('No offers saved yet');
+  } else if (open === 'profile'){
+    if (getSession()){
+      if (isMobile) openProfileMenu();
+      else toggleProfileDropdown($('#profileDropdown'));
+    } else {
+      openLogin();
+    }
+  }
+
+  history.replaceState(null, '', window.location.pathname + window.location.hash);
 }
 
 document.addEventListener('DOMContentLoaded', init);

@@ -9,6 +9,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 </head>
 <body>
 
@@ -28,42 +30,42 @@
       <button class="icon-btn" id="mobileSearchBtn" aria-label="Search">
         <svg viewBox="0 0 24 24"><path d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
       </button>
-      <button class="icon-btn nav-offers-btn" id="navOffersBtn" aria-label="Offers">
+      <button class="icon-btn nav-offers-btn js-offers-btn" id="navOffersBtn" aria-label="Offers">
         <svg viewBox="0 0 24 24"><path d="M20 12v9H4v-9M2 7h20v5H2V7zm10 0V3H8a2 2 0 000 4h4zm0 0V3h4a2 2 0 010 4h-4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
       </button>
       <a href="viber://chat?number=" class="icon-btn nav-viber-btn" id="navViberBtn" aria-label="Chat with us on Viber" target="_blank" rel="noopener">
         <img src="img/viber.png" alt="Viber" class="nav-viber-icon">
       </a>
-      <button class="icon-btn" id="cartBtn" aria-label="Cart">
+      <button class="icon-btn js-cart-btn" id="cartBtn" aria-label="Cart">
         <svg viewBox="0 0 24 24"><path d="M6 6h15l-1.5 9h-12z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="9" cy="20" r="1.4" fill="currentColor"/><circle cx="17" cy="20" r="1.4" fill="currentColor"/><path d="M6 6L4.5 2H2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-        <span class="cart-count" id="cartCount">0</span>
+        <span class="cart-count js-cart-count" id="cartCount">0</span>
       </button>
-      <button class="login-btn" id="loginBtn">Login / Register</button>
+      <button class="login-btn js-login-btn" id="loginBtn">Login / Register</button>
 
-      <div class="profile-wrap" id="profileWrap" hidden>
-        <button class="profile-btn" id="profileBtn" aria-label="Account">
+      <div class="profile-wrap js-profile-wrap" id="profileWrap" hidden>
+        <button class="profile-btn js-profile-toggle" id="profileBtn" aria-label="Account">
           <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="9.8" r="3.3" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M5.5 19.2a7.2 7.2 0 0113 0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
         </button>
         <div class="profile-dropdown" id="profileDropdown">
-          <button type="button" id="profileProfileBtn">Profile</button>
-          <button type="button" id="profileOrdersBtn">My Orders</button>
-          <button type="button" id="profileLogoutBtn">Logout</button>
+          <button type="button" class="js-profile-profile-btn" id="profileProfileBtn">Profile</button>
+          <button type="button" class="js-profile-orders-btn" id="profileOrdersBtn">My Orders</button>
+          <button type="button" class="js-profile-logout-btn" id="profileLogoutBtn">Logout</button>
         </div>
       </div>
     </div>
   </div>
-</header>
 
-<!-- ============ MOBILE SEARCH PANEL ============ -->
-<div class="mobile-search-backdrop" id="mobileSearchBackdrop"></div>
-<div class="mobile-search-panel" id="mobileSearchPanel">
-  <div class="mobile-search-bar">
-    <svg viewBox="0 0 24 24" class="search-icon"><path d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
-    <input type="text" id="mobileSearchInput" placeholder="Search your products from here" autocomplete="off">
-    <button class="mobile-search-close" id="mobileSearchClose" aria-label="Close">&times;</button>
+  <!-- ============ MOBILE SEARCH PANEL (dropdown, stays inside navbar) ============ -->
+  <div class="mobile-search-backdrop" id="mobileSearchBackdrop"></div>
+  <div class="mobile-search-panel" id="mobileSearchPanel">
+    <div class="mobile-search-bar">
+      <svg viewBox="0 0 24 24" class="search-icon"><path d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+      <input type="text" id="mobileSearchInput" placeholder="Search your products from here" autocomplete="off">
+      <button class="mobile-search-close" id="mobileSearchClose" aria-label="Close">&times;</button>
+    </div>
+    <div class="mobile-search-body" id="mobileSearchBody"></div>
   </div>
-  <div class="mobile-search-body" id="mobileSearchBody"></div>
-</div>
+</header>
 
 <!-- ============ MAIN LAYOUT ============ -->
 <main class="layout">
@@ -72,9 +74,24 @@
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-inner" id="sidebarInner">
       <div class="sidebar-title">Categories</div>
-      <ul class="sidebar-list" id="sidebarList">
-        <div class="sidebar-highlight" id="sidebarHighlight"></div>
-      </ul>
+      <div class="sidebar-body">
+        <div class="sidebar-scrollwrap" id="sidebarScrollwrap">
+          <ul class="sidebar-list" id="sidebarList">
+            <div class="sidebar-highlight" id="sidebarHighlight"></div>
+          </ul>
+        </div>
+        <div class="sidebar-rail" id="sidebarRail" hidden>
+          <button type="button" class="sidebar-rail-btn up" id="sidebarRailUp" aria-label="Scroll categories up">
+            <svg viewBox="0 0 24 24"><path d="M6 15l6-6 6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="sidebar-rail-track" id="sidebarRailTrack">
+            <div class="sidebar-rail-thumb" id="sidebarRailThumb"></div>
+          </div>
+          <button type="button" class="sidebar-rail-btn down" id="sidebarRailDown" aria-label="Scroll categories down">
+            <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </div>
     </div>
   </aside>
 
@@ -162,7 +179,7 @@
     </div>
 
     <div class="footer-bottom">
-      <span>MAZI General Trading</span>
+      <span>Copyright 2026 © MAZI GENERAL TRADING</span>
       <div class="footer-bottom-links">
         <a href="privacy.html">Privacy</a>
         <a href="terms.html">Terms</a>
@@ -205,9 +222,13 @@
 <!-- ============ MOBILE PROFILE MENU ============ -->
 <div class="menu-backdrop" id="profileMenuBackdrop"></div>
 <aside class="profile-menu" id="profileMenu">
+  <div class="profile-menu-handle"></div>
   <div class="profile-menu-head">
+    <button id="closeProfileMenu" class="profile-menu-back" aria-label="Back to store">
+      <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>Back to store</span>
+    </button>
     <img src="img/logo.png" alt="MAZI General Trading" class="profile-menu-logo">
-    <button id="closeProfileMenu" aria-label="Close">&times;</button>
   </div>
   <div class="profile-menu-body">
     <button type="button" id="pmProfileBtn">Profile</button>
@@ -222,18 +243,15 @@
     <svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8M5 10v10h14V10" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
     <span>Home</span>
   </button>
-  <a href="viber://chat?number=" class="bn-item bn-viber" id="bnViber" target="_blank" rel="noopener">
-    <img src="img/viber.png" alt="Viber" class="bn-viber-icon">
-    <span>Viber</span>
-  </a>
   <button class="bn-item" data-action="orders">
     <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-5 8h6m-6 4h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
     <span>Orders</span>
+    <span class="bn-badge js-orders-notif-count" id="bnOrdersCount" hidden>0</span>
   </button>
   <button class="bn-item" data-action="cart">
     <svg viewBox="0 0 24 24"><path d="M6 6h15l-1.5 9h-12z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="9" cy="20" r="1.4" fill="currentColor"/><circle cx="17" cy="20" r="1.4" fill="currentColor"/></svg>
     <span>Cart</span>
-    <span class="bn-badge" id="bnCartCount" hidden>0</span>
+    <span class="bn-badge js-cart-count" id="bnCartCount" hidden>0</span>
   </button>
   <button class="bn-item" data-action="profile">
     <svg viewBox="0 0 24 24"><path d="M12 12a4.5 4.5 0 100-9 4.5 4.5 0 000 9zM4.5 20.25a7.5 7.5 0 0115 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -244,10 +262,31 @@
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
-<!-- ============ VIBER CHAT FAB ============ -->
-<a href="viber://chat?number=" class="viber-fab" id="viberFab" aria-label="Chat with us on Viber" target="_blank" rel="noopener">
-  <img src="img/viber.png" alt="Viber" class="viber-icon">
-</a>
+<!-- ============ VIBER CHAT BUBBLE (mobile) ============ -->
+<button class="viber-fab" id="viberFab" aria-label="Chat with us on Viber" aria-haspopup="dialog" aria-expanded="false">
+  <img src="img/viber.png" alt="Viber">
+</button>
+
+<div class="viber-popup-backdrop" id="viberPopupBackdrop"></div>
+<div class="viber-popup" id="viberPopup" role="dialog" aria-modal="true" aria-label="Chat with us on Viber">
+  <div class="viber-popup-card">
+    <button class="viber-popup-close" id="viberPopupClose" aria-label="Close">
+      <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+    <div class="viber-popup-head">
+      <div class="viber-popup-avatar"><img src="img/viber.png" alt="Viber"></div>
+      <div class="viber-popup-headtext">
+        <div class="viber-popup-name">MAZI General Trading</div>
+        <div class="viber-popup-status"><span class="viber-status-dot"></span>Online on Viber</div>
+      </div>
+    </div>
+    <a href="viber://chat?number=" class="viber-popup-cta" target="_blank" rel="noopener">
+      Continue to Viber
+      <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+    <p class="viber-popup-msg">Got a question about your order, stock, or delivery? Chat with our team directly on Viber — usually replies within minutes.</p>
+  </div>
+</div>
 
 <!-- ============ AUTH MODAL (Login / Register) ============ -->
 <div class="auth-backdrop" id="authBackdrop"></div>
@@ -404,6 +443,123 @@
   </div>
 </div>
 
+<!-- ============ CHECKOUT DETAILS MODAL (name / mobile / location before placing order) ============ -->
+<div class="onboard-backdrop" id="checkoutDetailsBackdrop"></div>
+<div class="onboard-modal" id="checkoutDetailsModal">
+  <div class="onboard-card">
+    <button type="button" class="onboard-close-btn" id="checkoutDetailsCloseBtn" aria-label="Close">&times;</button>
+    <h2 class="onboard-title">Delivery Details</h2>
+    <p class="onboard-sub">Just need a few details so we can get your order to you.</p>
+
+    <form id="checkoutDetailsForm" class="onboard-form">
+      <label class="auth-field" id="cdNameField">
+        <span>Full Name</span>
+        <input type="text" id="cdName" placeholder="Juan Dela Cruz" required>
+        <small class="field-error" id="cdNameError" hidden>Please enter your full name.</small>
+      </label>
+
+      <label class="auth-field" id="cdMobileField">
+        <span>Mobile Number</span>
+        <input type="tel" id="cdMobile" placeholder="7xx-xxxx" required>
+        <small class="field-error" id="cdMobileError" hidden>Please enter a valid mobile number.</small>
+      </label>
+
+      <div class="auth-field" id="cdLocationField">
+        <span>Delivery Location</span>
+        <div class="cd-map-wrap">
+          <div id="cdMap" class="cd-map"></div>
+          <div class="cd-map-hint" id="cdMapHint">Tap the map to drop a pin at your location</div>
+        </div>
+        <span class="cd-address-label">Exact Address</span>
+        <input type="text" id="cdAddress" class="cd-address-input" placeholder="House name, street, island (e.g. H. Sunny Villa, Machangolhi, Male')" required>
+        <small class="field-error" id="cdPinError" hidden>Please drop a pin for your delivery location.</small>
+        <small class="field-error" id="cdAddressError" hidden>Please type your exact address.</small>
+      </div>
+
+      <button type="submit" class="onboard-submit-btn">Place Order</button>
+    </form>
+  </div>
+</div>
+
+<!-- ============ ORDER CONFIRMATION MODAL ============ -->
+<div class="oc-backdrop" id="ocBackdrop"></div>
+<div class="oc-modal" id="ocModal">
+  <div class="oc-scroll">
+    <div class="oc-ticket">
+      <div class="oc-top">
+        <button type="button" class="oc-close-btn" id="ocCloseBtn" aria-label="Close">&times;</button>
+        <div class="oc-check">
+          <svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <h1 class="oc-title">Order Placed!</h1>
+        <p class="oc-sub" id="ocSub"></p>
+
+        <div class="oc-items-box">
+          <div class="oc-items-label">Items</div>
+          <div class="oc-items" id="ocItems"></div>
+          <div class="oc-totals" id="ocTotals"></div>
+        </div>
+      </div>
+
+      <div class="oc-perforation">
+        <span class="oc-notch oc-notch-left"></span>
+        <span class="oc-perforation-line"></span>
+        <span class="oc-notch oc-notch-right"></span>
+      </div>
+
+      <div class="oc-bottom">
+        <div class="oc-details-label">Order Details</div>
+        <div class="oc-details-grid" id="ocDetails"></div>
+        <div class="oc-thanks">Thank you for shopping with us!</div>
+        <div class="oc-help">Need help? <a href="viber://chat?number=" target="_blank" rel="noopener">Chat with us on Viber</a></div>
+      </div>
+    </div>
+
+    <button type="button" class="oc-orders-btn" id="ocOrdersBtn">View My Orders</button>
+  </div>
+</div>
+
+<!-- ============ RECEIPT MODAL ============ -->
+<div class="receipt-backdrop" id="receiptBackdrop"></div>
+<div class="receipt-modal" id="receiptModal">
+  <div class="receipt-modal-card">
+    <div class="receipt-modal-head">
+      <h3>Receipt</h3>
+      <button type="button" class="receipt-close-btn" id="receiptCloseBtn" aria-label="Close">&times;</button>
+    </div>
+
+    <div class="receipt-size-bar">
+      <span class="receipt-size-label">Paper size</span>
+      <div class="receipt-size-options" id="receiptSizeOptions">
+        <button type="button" class="receipt-size-btn" data-size="58mm">58mm</button>
+        <button type="button" class="receipt-size-btn" data-size="80mm">80mm</button>
+        <button type="button" class="receipt-size-btn" data-size="a5">A5</button>
+        <button type="button" class="receipt-size-btn" data-size="a4">A4</button>
+        <button type="button" class="receipt-size-btn" data-size="letter">Letter</button>
+      </div>
+    </div>
+
+    <div class="receipt-preview-scroll" id="receiptPreviewScroll">
+      <div class="receipt-paper-wrap" id="receiptPaperWrap">
+        <div class="receipt-paper" id="receiptPaper">
+          <div class="receipt-content" id="receiptContent"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="receipt-modal-actions">
+      <button type="button" class="receipt-action-btn receipt-download-btn" id="receiptDownloadBtn">
+        <svg viewBox="0 0 24 24"><path d="M12 3v13m0 0l-5-5m5 5l5-5M4 21h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Download
+      </button>
+      <button type="button" class="receipt-action-btn receipt-print-btn" id="receiptPrintBtn">
+        <svg viewBox="0 0 24 24"><path d="M6 9V3h12v6M6 18H4a1 1 0 01-1-1v-6a1 1 0 011-1h16a1 1 0 011 1v6a1 1 0 01-1 1h-2M6 14h12v7H6v-7z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Print
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- ============ AUTH LOADING OVERLAY ============ -->
 <div class="auth-loading" id="authLoading">
   <div class="auth-loading-dots">
@@ -416,8 +572,24 @@
   <div class="profile-view-topbar">
     <button class="profile-view-close" id="profileViewClose" aria-label="Back to store">
       <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      Back to store
+      <span>Back to store</span>
     </button>
+    <div class="nav-actions">
+      <button class="icon-btn js-cart-btn" aria-label="Cart">
+        <svg viewBox="0 0 24 24"><path d="M6 6h15l-1.5 9h-12z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="9" cy="20" r="1.4" fill="currentColor"/><circle cx="17" cy="20" r="1.4" fill="currentColor"/><path d="M6 6L4.5 2H2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <span class="cart-count js-cart-count" hidden>0</span>
+      </button>
+      <button class="login-btn js-login-btn">Login / Register</button>
+      <div class="profile-wrap js-profile-wrap" hidden>
+        <button class="profile-btn js-profile-toggle" aria-label="Account">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="9.8" r="3.3" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M5.5 19.2a7.2 7.2 0 0113 0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </button>
+        <div class="profile-dropdown">
+          <button type="button" class="js-profile-orders-btn">My Orders</button>
+          <button type="button" class="js-profile-logout-btn">Logout</button>
+        </div>
+      </div>
+    </div>
   </div>
   <div class="profile-view-wrap">
 
@@ -486,6 +658,8 @@
       Click here to <a href="#" id="pvDeleteAccountLink">Delete My Account</a>
     </div>
 
+    <button type="button" class="profile-view-logout-btn" id="pvLogoutBtn">Logout</button>
+
   </div>
 </div>
 
@@ -494,8 +668,25 @@
   <div class="profile-view-topbar">
     <button class="profile-view-close" id="ordersViewClose" aria-label="Back to store">
       <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      Back to store
+      <span>Back to store</span>
     </button>
+    <div class="nav-actions">
+      <button class="icon-btn js-cart-btn" aria-label="Cart">
+        <svg viewBox="0 0 24 24"><path d="M6 6h15l-1.5 9h-12z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="9" cy="20" r="1.4" fill="currentColor"/><circle cx="17" cy="20" r="1.4" fill="currentColor"/><path d="M6 6L4.5 2H2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <span class="cart-count js-cart-count" hidden>0</span>
+      </button>
+      <button class="login-btn js-login-btn">Login / Register</button>
+      <div class="profile-wrap js-profile-wrap" hidden>
+        <button class="profile-btn js-profile-toggle" aria-label="Account">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="9.8" r="3.3" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M5.5 19.2a7.2 7.2 0 0113 0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </button>
+        <div class="profile-dropdown">
+          <button type="button" class="js-profile-profile-btn">Profile</button>
+          <button type="button" class="js-profile-orders-btn">My Orders</button>
+          <button type="button" class="js-profile-logout-btn">Logout</button>
+        </div>
+      </div>
+    </div>
   </div>
   <div class="profile-view-wrap orders-view-wrap">
     <div class="orders-card">
@@ -513,15 +704,50 @@
   <div class="profile-view-topbar">
     <button class="profile-view-close" id="productViewClose" aria-label="Back to store">
       <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      Back to store
+      <span>Back to store</span>
     </button>
+    <div class="nav-actions">
+      <button class="icon-btn js-cart-btn" aria-label="Cart">
+        <svg viewBox="0 0 24 24"><path d="M6 6h15l-1.5 9h-12z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="9" cy="20" r="1.4" fill="currentColor"/><circle cx="17" cy="20" r="1.4" fill="currentColor"/><path d="M6 6L4.5 2H2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <span class="cart-count js-cart-count" hidden>0</span>
+      </button>
+      <button class="login-btn js-login-btn">Login / Register</button>
+      <div class="profile-wrap js-profile-wrap" hidden>
+        <button class="profile-btn js-profile-toggle" aria-label="Account">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="9.8" r="3.3" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M5.5 19.2a7.2 7.2 0 0113 0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </button>
+        <div class="profile-dropdown">
+          <button type="button" class="js-profile-profile-btn">Profile</button>
+          <button type="button" class="js-profile-orders-btn">My Orders</button>
+          <button type="button" class="js-profile-logout-btn">Logout</button>
+        </div>
+      </div>
+    </div>
   </div>
   <div class="profile-view-wrap product-view-wrap">
     <div class="product-detail-card" id="productDetailCard"></div>
 
     <div class="similar-products-section" id="similarProductsSection" hidden>
-      <h3 class="similar-products-title">Similar Products</h3>
-      <div class="product-grid" id="similarProductsGrid"></div>
+      <div class="similar-products-head">
+        <h3 class="similar-products-title">Similar Products</h3>
+        <div class="carousel-nav">
+          <button type="button" class="carousel-arrow" id="similarPrevBtn" aria-label="Previous">
+            <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <button type="button" class="carousel-arrow" id="similarNextBtn" aria-label="Next">
+            <svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="carousel-track" id="similarProductsGrid"></div>
+    </div>
+
+    <div class="similar-products-section" id="otherProductsSection" hidden>
+      <h3 class="similar-products-title">Other Products</h3>
+      <div class="product-grid" id="otherProductsGrid"></div>
+      <div class="see-all-row">
+        <button type="button" class="see-all-btn" id="otherProductsSeeAllBtn">See All</button>
+      </div>
     </div>
   </div>
 </div>
