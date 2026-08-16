@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Checkout — MAZI General Trading</title>
+<link rel="icon" type="image/png" href="img/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="co-page" id="coPage">
+
+<header class="co-header">
+  <div class="co-header-inner">
+    <a href="index.html" class="co-back">
+      <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>Back to store</span>
+    </a>
+    <div class="co-secure-note">
+      <svg viewBox="0 0 24 24"><path d="M12 2l7 4v6c0 5-3.4 8.4-7 10-3.6-1.6-7-5-7-10V6l7-4z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+      <span>Secure checkout</span>
+    </div>
+  </div>
+</header>
+
+<div class="co-content" id="coContent">
+  <div class="co-wrap">
+    <div class="co-title-row">
+      <h1 class="co-title">Checkout</h1>
+      <p class="co-title-sub" id="coTitleSub">Review your order and complete payment.</p>
+    </div>
+
+    <form id="checkoutForm" class="co-grid">
+      <div class="co-main">
+
+        <!-- 1. Contact -->
+        <div class="co-section">
+          <div class="co-section-head"><span class="co-num">1</span>Contact</div>
+          <div class="co-contact-box">
+            <div class="co-contact-name" id="coContactName">Signed in as —</div>
+            <div class="co-contact-mobile" id="coContactMobile"></div>
+          </div>
+          <label class="co-field" id="coMobileField">
+            <span>Mobile Number</span>
+            <input type="tel" id="coMobile" placeholder="7xx-xxxx" required>
+            <small class="co-field-error">Please enter a valid mobile number.</small>
+          </label>
+        </div>
+
+        <!-- 2. Review items -->
+        <div class="co-section">
+          <div class="co-section-head"><span class="co-num">2</span>Review Your Items<span class="co-item-count" id="coItemCount"></span></div>
+          <div class="co-items" id="coItems"></div>
+        </div>
+
+        <!-- 3. Delivery preferences -->
+        <div class="co-section">
+          <div class="co-section-head"><span class="co-num">3</span>Delivery Preferences</div>
+          <div class="co-tabs" id="coDeliveryTabs">
+            <button type="button" class="co-tab active" data-method="pickup">
+              <span class="co-tab-title">Showroom Pickup</span>
+              <span class="co-tab-sub">Male' — always free</span>
+            </button>
+            <button type="button" class="co-tab" data-method="delivery">
+              <span class="co-tab-title">Delivery</span>
+              <span class="co-tab-sub">Home delivery with a booked time slot</span>
+            </button>
+            <button type="button" class="co-tab" data-method="boat">
+              <span class="co-tab-title">Boat Delivery</span>
+              <span class="co-tab-sub">Send via your arranged boat or dhoni</span>
+            </button>
+          </div>
+
+          <!-- Pickup panel -->
+          <div class="co-panel" id="coPanelPickup">
+            <div class="co-store-name">Male' Showroom</div>
+            <label class="co-field">
+              <span>Pickup Note (optional)</span>
+              <input type="text" id="coPickupNote" placeholder="e.g. Call when ready, pick up after 5 PM...">
+            </label>
+            <div class="co-label-sm">Pickup Time Slot</div>
+            <div class="co-days" id="coPickupDays"></div>
+            <div class="co-slot active" id="coPickupSlot">
+              <span class="co-slot-main">10:00 AM &ndash; 10:00 PM</span>
+              <span class="co-slot-sub">Male' Showroom hours</span>
+            </div>
+            <div class="co-hours-box">
+              <div class="co-hours-row"><span>Sun&ndash;Thu</span><span>10:00 AM &ndash; 10:00 PM</span></div>
+              <div class="co-hours-row"><span>Sat</span><span>10:00 AM &ndash; 10:00 PM</span></div>
+            </div>
+          </div>
+
+          <!-- Delivery panel -->
+          <div class="co-panel" id="coPanelDelivery" hidden>
+            <div class="co-row-2">
+              <label class="co-field" id="coAtollField">
+                <span>Atoll</span>
+                <select id="coAtoll"></select>
+              </label>
+              <label class="co-field" id="coIslandField">
+                <span>Island</span>
+                <select id="coIsland"></select>
+              </label>
+            </div>
+            <div class="co-row-2">
+              <label class="co-field" id="coHouseField">
+                <span>House / Apt Name</span>
+                <input type="text" id="coHouse" placeholder="House / Apt name">
+                <small class="co-field-error">Please enter your house/apartment name.</small>
+              </label>
+              <label class="co-field">
+                <span>Landmark (optional)</span>
+                <input type="text" id="coLandmark" placeholder="Landmark (optional)">
+              </label>
+            </div>
+            <label class="co-field">
+              <span>Delivery Note (optional)</span>
+              <textarea id="coDeliveryNote" class="co-textarea" placeholder="e.g. Gate code, leave with neighbour, call on arrival..."></textarea>
+            </label>
+
+            <div class="co-label-sm">Island Delivery Estimate</div>
+            <div class="co-hours-box">
+              <div class="co-estimate-row">
+                <span>
+                  <span class="co-slot-main" id="coEstimateTitle">Male' Delivery</span>
+                  <span class="co-slot-sub" id="coEstimateSub">Cargo boat / speedboat / air freight</span>
+                </span>
+                <span class="co-estimate-value">
+                  <span class="co-complimentary" id="coEstimateFee">Complimentary</span>
+                  <span class="co-slot-sub" id="coEstimateEta">Same Day</span>
+                </span>
+              </div>
+            </div>
+
+            <div class="co-label-sm">Delivery Timing</div>
+            <div class="co-hours-box">
+              <p class="co-payment-note" id="coTimingNote" style="margin:0;">No time slot needed. Delivery will be arranged based on your island estimate above.</p>
+            </div>
+          </div>
+
+          <!-- Boat delivery panel -->
+          <div class="co-panel" id="coPanelBoat" hidden>
+            <div class="co-label-sm">Boat Details</div>
+            <div class="co-row-2">
+              <label class="co-field" id="coBoatNameField">
+                <span>Boat Name</span>
+                <input type="text" id="coBoatName" placeholder="Search name, operator, type, island...">
+                <small class="co-field-error">Please enter the boat name.</small>
+              </label>
+              <label class="co-field" id="coBoatContactField">
+                <span>Boat Contact Number</span>
+                <input type="tel" id="coBoatContact" placeholder="7XXXXXX">
+                <small class="co-field-error">Please enter a valid contact number.</small>
+              </label>
+            </div>
+            <label class="co-field" id="coBoatDepartureField">
+              <span>Boat Departure Date and Time</span>
+              <input type="datetime-local" id="coBoatDeparture">
+              <small class="co-field-error">Please select the boat departure date and time.</small>
+            </label>
+
+            <div class="co-label-sm">Package Details</div>
+            <div class="co-row-2">
+              <label class="co-field" id="coBoatCustomerNameField">
+                <span>Customer Name</span>
+                <input type="text" id="coBoatCustomerName" placeholder="Customer name">
+                <small class="co-field-error">Please enter the customer name.</small>
+              </label>
+              <label class="co-field" id="coBoatCustomerContactField">
+                <span>Customer Contact</span>
+                <input type="tel" id="coBoatCustomerContact" placeholder="Customer contact">
+                <small class="co-field-error">Please enter a valid contact number.</small>
+              </label>
+            </div>
+
+            <label class="co-field" id="coBoatAddressField">
+              <span>Address</span>
+              <input type="text" id="coBoatAddress" placeholder="House / apartment / jetty address">
+              <small class="co-field-error">Please enter the pickup address.</small>
+            </label>
+
+            <div class="co-row-2">
+              <label class="co-field" id="coBoatIslandNameField">
+                <span>Island Name</span>
+                <input type="text" id="coBoatIslandName" placeholder="Island name">
+                <small class="co-field-error">Please enter the island name.</small>
+              </label>
+              <label class="co-field" id="coBoatIslandCodeField">
+                <span>Island Code</span>
+                <input type="text" id="coBoatIslandCode" placeholder="e.g. K. Male'">
+                <small class="co-field-error">Please enter the island code.</small>
+              </label>
+            </div>
+
+            <label class="co-field">
+              <span>Boat Delivery Note (optional)</span>
+              <textarea id="coBoatNote" class="co-textarea" placeholder="e.g. Leave at jetty office, fragile items..."></textarea>
+            </label>
+          </div>
+        </div>
+
+        <!-- 4. Payment -->
+        <div class="co-section">
+          <div class="co-section-head"><span class="co-num">4</span>Payment</div>
+          <div class="co-payment-box">
+            <div class="co-payment-label">Bank transfer &mdash; payment slip required</div>
+            <div class="co-payment-grid">
+              <div class="co-bank-panel">
+                <div class="co-bank-label">Bank transfer details</div>
+                <div class="co-bank-name">Bank of Maldives</div>
+                <div class="co-bank-company">MAZI GENERAL TRADING PVT LTD</div>
+                <div class="co-bank-accounts">
+                  <div><span class="co-bank-tag">MVR</span><strong>7730-0000-000-001</strong></div>
+                  <div><span class="co-bank-tag">USD</span><strong>7730-0000-000-002</strong></div>
+                </div>
+                <div class="co-bank-note">Please include your order name or contact number in the transfer reference when possible.</div>
+              </div>
+              <div class="co-qr-panel">
+                <div class="co-qr-label">Scan National QR to Pay</div>
+                <div class="co-qr-box">
+                  <img src="img/payment-qr.png" alt="MAZI General Trading payment QR" class="co-qr-img" onerror="this.classList.add('img-missing')">
+                  <div class="co-qr-fallback">QR CODE</div>
+                </div>
+                <div class="co-qr-caption">Use your banking app to scan and pay the exact order total.</div>
+              </div>
+            </div>
+            <p class="co-payment-note">After payment, upload your transfer receipt below. Orders are accepted only with a payment slip; our team will verify the payment before dispatch.</p>
+
+            <div class="co-upload-label">Transfer Receipt (required)</div>
+            <label class="co-upload" id="coUploadWrap" for="coSlip">
+              <span id="coUploadLabel">Tap to upload slip (JPG, PNG, PDF &mdash; max 5MB)</span>
+              <input type="file" id="coSlip" accept=".jpg,.jpeg,.png,.pdf">
+            </label>
+            <small class="co-field-error" id="coSlipError" style="display:none;margin-top:6px;">Please upload your payment slip.</small>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="co-aside">
+        <div class="co-summary-card">
+          <div class="co-summary-title">Order Summary</div>
+          <div class="co-summary-row"><span>Subtotal</span><span id="coSubtotal">MVR 0.00</span></div>
+          <div class="co-summary-row co-muted"><span>Includes GST (8%)</span><span id="coGst">MVR 0.00</span></div>
+          <div class="co-summary-row"><span>Delivery</span><span id="coDeliveryFee" class="co-complimentary">Complimentary</span></div>
+          <div class="co-summary-divider"></div>
+          <div class="co-summary-row co-total"><span>Total (MVR)</span><span id="coTotal">MVR 0.00</span></div>
+          <p class="co-price-note">Product prices include GST.</p>
+
+
+          <button type="submit" class="co-place-btn" id="coSubmitBtn">Place Your Order</button>
+        </div>
+
+        <div class="co-secure-box">
+          <svg viewBox="0 0 24 24" class="co-secure-icon"><path d="M12 2l7 4v6c0 5-3.4 8.4-7 10-3.6-1.6-7-5-7-10V6l7-4z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+          <div>
+            <div class="co-secure-title">Secure checkout</div>
+            <div class="co-secure-sub">All orders are verified by our team before dispatch. You'll be notified once your payment slip is confirmed.</div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Success view -->
+<div class="co-success" id="coSuccess">
+  <div class="co-check-badge">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+  </div>
+  <h2 class="co-success-title">Order Placed!</h2>
+  <p class="co-success-sub" id="coSuccessSub">Your order has been received and is now pending confirmation from our team.</p>
+
+  <div class="co-success-box">
+    <div class="co-summary-row co-total" style="margin-bottom:0;"><span>Order Total</span><span id="coSuccessTotal">MVR 0.00</span></div>
+    <div class="co-success-details">
+      <div>
+        <div class="co-success-k">Order ID</div>
+        <div class="co-success-v" id="coSuccessOrderId">—</div>
+      </div>
+      <div>
+        <div class="co-success-k">Order Date</div>
+        <div class="co-success-v" id="coSuccessDate">—</div>
+      </div>
+      <div>
+        <div class="co-success-k">Status</div>
+        <div class="co-success-v">Pending Confirmation</div>
+      </div>
+      <div>
+        <div class="co-success-k">Contact</div>
+        <div class="co-success-v" id="coSuccessContact">—</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="co-success-actions">
+    <a href="index.html?open=orders" class="co-btn co-btn-primary">View My Orders</a>
+    <a href="index.html" class="co-btn co-btn-ghost">Continue Shopping</a>
+  </div>
+</div>
+
+<script src="page-transitions.js"></script>
+<script src="checkout.js"></script>
+</body>
+</html>

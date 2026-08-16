@@ -99,6 +99,12 @@ let state = {
   pendingQty: {},
 };
 
+/* ---------- Checkout config ---------- */
+const GST_RATE = 0.08; // product prices already include GST — this is just the informational breakout
+let ckMethod = 'pickup'; // 'pickup' | 'delivery' | 'boat'
+let ckSlipFile = null;
+let ckPickupDayIndex = 0;
+
 /* ============ Helpers ============ */
 const fmt = n => 'MVR ' + n.toFixed(2);
 const $ = sel => document.querySelector(sel);
@@ -656,7 +662,6 @@ function updateCartUI(){
             <span>${qty}</span>
             <button data-qty-plus="${id}">&plus;</button>
           </div>
-          <button class="cart-row-remove" data-remove="${id}">Remove</button>
         </div>
       </div>
     `;
@@ -850,11 +855,13 @@ function placeOrder(customer){
     const qty = state.cart[id];
     return { id:p.id, name:p.name, pack:p.pack, unit:p.unit, price:p.price, qty };
   });
-  const total = items.reduce((s,it)=> s + it.price*it.qty, 0);
+  const subtotal = items.reduce((s,it)=> s + it.price*it.qty, 0);
+  const deliveryFee = customer && typeof customer.deliveryFee === 'number' ? customer.deliveryFee : null;
+  const total = customer && typeof customer.total === 'number' ? customer.total : subtotal;
 
   const orders = getOrders();
   const orderNo = `MZ${new Date().getFullYear()}${String(orders.length+1).padStart(4,'0')}`;
-  const order = { id:orderNo, placedAt:Date.now(), items, total, customer: customer || null };
+  const order = { id:orderNo, placedAt:Date.now(), items, subtotal, deliveryFee, total, customer: customer || null };
   orders.unshift(order);
   saveOrders(orders);
 
@@ -1133,24 +1140,33 @@ function openOrderConfirmModal(order){
     ` : ''}
   `;
 
+  const subtotal = typeof order.subtotal === 'number' ? order.subtotal : order.total;
+  const feeLabel = order.deliveryFee === 0 ? 'Complimentary' : (order.deliveryFee == null ? 'To be confirmed' : fmt(order.deliveryFee));
   $('#ocTotals').innerHTML = `
-    <div class="oc-total-row"><span>Subtotal</span><span>${fmt(order.total)}</span></div>
-    <div class="oc-total-row"><span>Delivery Fee</span><span>To be confirmed</span></div>
+    <div class="oc-total-row"><span>Subtotal</span><span>${fmt(subtotal)}</span></div>
+    <div class="oc-total-row"><span>Delivery Fee</span><span>${feeLabel}</span></div>
     <div class="oc-total-row oc-grand"><span>Order Total</span><span>${fmt(order.total)}</span></div>
   `;
 
   const contact = customer.mobile || session.mobile || session.email || '—';
+  const methodLabels = { pickup:"Showroom Pickup — Male'", delivery:'Home Delivery', boat:'Boat / Dhoni Delivery' };
   const loc = customer.location;
-  const locationHtml = (loc && loc.mapUrl)
-    ? `${loc.address ? `${loc.address}<br>` : ''}<a href="${loc.mapUrl}" target="_blank" rel="noopener" class="oc-map-link">View pinned location ↗</a>`
-    : (session.city || '—');
+  let locationHtml = '—';
+  if (customer.method === 'delivery' && loc && loc.address){
+    locationHtml = loc.address + (loc.note ? `<br>${loc.note}` : '');
+  } else if (customer.method === 'boat' && loc && loc.boatDetails){
+    locationHtml = `${loc.boatName} &middot; ${loc.boatContact}${loc.boatDeparture ? `<br>Departs ${new Date(loc.boatDeparture).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}` : ''}<br>${loc.address}, ${loc.islandName} (${loc.islandCode})${loc.note ? `<br>${loc.note}` : ''}`;
+  } else if (customer.method === 'pickup' && loc){
+    locationHtml = `${loc.store}${loc.day ? ` &middot; ${loc.day}` : ''}${loc.note ? `<br>${loc.note}` : ''}`;
+  }
 
   $('#ocDetails').innerHTML = `
     <div><div class="oc-detail-key">Order ID</div><div class="oc-detail-val">${order.id}</div></div>
     <div><div class="oc-detail-key">Order Date</div><div class="oc-detail-val">${formatOrderDate(order.placedAt)}</div></div>
     <div><div class="oc-detail-key">Status</div><div class="oc-detail-val">Pending Confirmation</div></div>
     <div><div class="oc-detail-key">Contact</div><div class="oc-detail-val">${contact}</div></div>
-    <div><div class="oc-detail-key">Delivery To</div><div class="oc-detail-val">${locationHtml}</div></div>
+    <div><div class="oc-detail-key">${customer.method === 'pickup' ? 'Pickup' : 'Delivery'} Method</div><div class="oc-detail-val">${methodLabels[customer.method] || '—'}</div></div>
+    <div><div class="oc-detail-key">${customer.method === 'pickup' ? 'Pickup Details' : 'Delivery To'}</div><div class="oc-detail-val">${locationHtml}</div></div>
   `;
 
   $('#ocBackdrop').classList.add('show');
@@ -1171,88 +1187,6 @@ function toggleOcItems(){
   btn.classList.toggle('expanded', expanded);
   const hiddenCount = hidden.querySelectorAll('.oc-item-row').length;
   label.textContent = expanded ? 'See less' : `See ${hiddenCount} more item${hiddenCount!==1?'s':''}`;
-}
-
-/* ============ Checkout Details (name / mobile / location, asked right before placing the order) ============ */
-let _cdMap = null;
-let _cdMarker = null;
-let _cdPin = null; // { lat, lng }
-const CD_MAP_DEFAULT_CENTER = [4.1755, 73.5093]; // Male', Maldives
-const CD_MAP_DEFAULT_ZOOM = 13;
-
-function initCdMap(){
-  if (_cdMap || typeof L === 'undefined') return;
-  _cdMap = L.map('cdMap', { attributionControl:false }).setView(CD_MAP_DEFAULT_CENTER, CD_MAP_DEFAULT_ZOOM);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-  }).addTo(_cdMap);
-  L.control.attribution({ prefix:false }).addTo(_cdMap);
-
-  _cdMap.on('click', e=> setCdPin(e.latlng.lat, e.latlng.lng));
-}
-
-function setCdPin(lat, lng){
-  _cdPin = { lat, lng };
-  if (!_cdMarker){
-    _cdMarker = L.marker([lat, lng], { draggable:true }).addTo(_cdMap);
-    _cdMarker.on('dragend', ()=>{
-      const pos = _cdMarker.getLatLng();
-      _cdPin = { lat: pos.lat, lng: pos.lng };
-      updateCdMapHint();
-    });
-  } else {
-    _cdMarker.setLatLng([lat, lng]);
-  }
-  updateCdMapHint();
-  $('#cdLocationField').classList.remove('pin-error');
-  $('#cdPinError').hidden = true;
-}
-
-function clearCdPin(){
-  _cdPin = null;
-  if (_cdMarker){
-    _cdMap.removeLayer(_cdMarker);
-    _cdMarker = null;
-  }
-  updateCdMapHint();
-}
-
-function updateCdMapHint(){
-  const hint = $('#cdMapHint');
-  if (_cdPin){
-    hint.textContent = `Pin dropped ✓  (${_cdPin.lat.toFixed(5)}, ${_cdPin.lng.toFixed(5)})`;
-    hint.classList.add('pinned');
-  } else {
-    hint.textContent = 'Tap the map to drop a pin at your location';
-    hint.classList.remove('pinned');
-  }
-}
-
-function openCheckoutDetailsModal(){
-  const session = getSession() || {};
-  $('#cdName').value = [session.firstName, session.lastName].filter(Boolean).join(' ') || session.name || '';
-  $('#cdMobile').value = session.mobile || '';
-  $('#cdAddress').value = '';
-  clearCdPin();
-  ['cdNameField','cdMobileField'].forEach(id=>{
-    $('#'+id).classList.remove('has-error');
-  });
-  $('#cdLocationField').classList.remove('pin-error','address-error');
-  $('#cdPinError').hidden = true;
-  $('#cdAddressError').hidden = true;
-  $('#checkoutDetailsBackdrop').classList.add('show');
-  $('#checkoutDetailsModal').classList.add('open');
-  document.body.style.overflow = 'hidden';
-
-  initCdMap();
-  // Map container is laid out only once its wrapper becomes visible/sized,
-  // so give the open transition a moment then force Leaflet to recalc size.
-  setTimeout(()=>{ if (_cdMap) _cdMap.invalidateSize(); }, 250);
-}
-function closeCheckoutDetailsModal(){
-  $('#checkoutDetailsBackdrop').classList.remove('show');
-  $('#checkoutDetailsModal').classList.remove('open');
-  document.body.style.overflow = '';
 }
 
 /* ============ Receipt (view / print / save as PDF) ============ */
@@ -1463,6 +1397,38 @@ function populateAllCities(){
     Object.entries(ATOLLS).map(([atoll, cities]) =>
       `<optgroup label="${atoll}">${cities.map(c => `<option>${c}</option>`).join('')}</optgroup>`
     ).join('');
+}
+
+function populateAtollSelect(selectId){
+  const sel = $(selectId);
+  sel.innerHTML = Object.keys(ATOLLS).map(atoll => `<option value="${atoll}">${atoll}</option>`).join('');
+}
+function populateIslandSelect(selectId, atoll){
+  const sel = $(selectId);
+  const cities = ATOLLS[atoll] || [];
+  sel.innerHTML = cities.map(c => `<option>${c}</option>`).join('');
+}
+function ckIsMaleIsland(island){
+  return island === "Male'" || island === "Hulhumale'";
+}
+function renderDeliveryEstimate(){
+  const island = $('#cdIsland').value;
+  const male = ckIsMaleIsland(island);
+  $('#cdEstimateTitle').textContent = male ? "Male' Delivery" : `${island || 'Island'} Delivery`;
+  $('#cdEstimateSub').textContent = 'Cargo boat / speedboat / air freight';
+  const feeEl = $('#cdEstimateFee');
+  const etaEl = $('#cdEstimateEta');
+  if (male){
+    feeEl.textContent = 'Complimentary';
+    feeEl.classList.add('ck-complimentary');
+    feeEl.classList.remove('ck-tbc');
+    etaEl.textContent = 'Same Day';
+  } else {
+    feeEl.textContent = 'To be confirmed';
+    feeEl.classList.remove('ck-complimentary');
+    feeEl.classList.add('ck-tbc');
+    etaEl.textContent = '2–4 Working Days';
+  }
 }
 
 function toggleBusinessFields(){
@@ -1727,59 +1693,9 @@ function init(){
       openLogin();
       return;
     }
-    closeCart();
-    openCheckoutDetailsModal();
-  });
-
-  $('#checkoutDetailsBackdrop').addEventListener('click', closeCheckoutDetailsModal);
-  $('#checkoutDetailsCloseBtn').addEventListener('click', closeCheckoutDetailsModal);
-  $('#checkoutDetailsForm').addEventListener('submit', e=>{
-    e.preventDefault();
-
-    const name = $('#cdName').value.trim();
-    const mobile = $('#cdMobile').value.trim();
-    const address = $('#cdAddress').value.trim();
-
-    const nameOk = name.length > 0;
-    const mobileOk = /^[0-9+\-\s]{6,}$/.test(mobile);
-    const pinOk = !!_cdPin;
-    const addressOk = address.length >= 5;
-
-    $('#cdNameField').classList.toggle('has-error', !nameOk);
-    $('#cdMobileField').classList.toggle('has-error', !mobileOk);
-    $('#cdLocationField').classList.toggle('pin-error', !pinOk);
-    $('#cdLocationField').classList.toggle('address-error', !addressOk);
-    $('#cdNameError').hidden = nameOk;
-    $('#cdMobileError').hidden = mobileOk;
-    $('#cdPinError').hidden = pinOk;
-    $('#cdAddressError').hidden = addressOk;
-
-    if (!nameOk || !mobileOk || !pinOk || !addressOk) return;
-
-    const location = {
-      lat: _cdPin.lat,
-      lng: _cdPin.lng,
-      mapUrl: `https://www.google.com/maps?q=${_cdPin.lat},${_cdPin.lng}`,
-      address,
-    };
-
-    closeCheckoutDetailsModal();
-    withAuthLoading(()=>{
-      const order = placeOrder({ name, mobile, location });
-      if (!order) return;
-      renderProducts();
-      openOrderConfirmModal(order);
-    }, 2000);
-  });
-  ['cdName','cdMobile'].forEach(id=>{
-    const el = $('#'+id);
-    const clearError = ()=> $('#'+id+'Field').classList.remove('has-error');
-    el.addEventListener('input', clearError);
-    el.addEventListener('change', clearError);
-  });
-  $('#cdAddress').addEventListener('input', ()=>{
-    $('#cdLocationField').classList.remove('address-error');
-    $('#cdAddressError').hidden = true;
+    document.body.classList.add('is-checkout-leaving');
+    $('#checkoutBtn').disabled = true;
+    setTimeout(()=> { window.location.href = 'checkout.html'; }, 360);
   });
 
   $('#closeMenu').addEventListener('click', closeMenu);
@@ -2055,6 +1971,8 @@ function handleOpenParam(){
     } else {
       openLogin();
     }
+  } else if (open === 'orders'){
+    openOrdersView();
   }
 
   history.replaceState(null, '', window.location.pathname + window.location.hash);
