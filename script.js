@@ -20,7 +20,7 @@ const CATEGORIES = [
 
 /* ---------- Product data ---------- */
 const PRODUCTS = [
-  { id:'MZ001', name:'Coast Full Cream Milk Powder 400g', cat:'dairy', icon:'🥛', pack:'Carton', unit:'24 x 400g', price:1180, stock:'low' },
+  { id:'MZ001', name:'Coast Full Cream Milk Powder 400g', cat:'dairy', icon:'🥛', pack:'Carton', unit:'24 x 400g', price:1180, stock:'out' },
   { id:'MZ002', name:'Dutch Farm UHT Milk 1L', cat:'dairy', icon:'🥛', pack:'Carton', unit:'12 x 1L', price:640, stock:'in' },
   { id:'MZ003', name:'Golden Churn Butter 200g', cat:'dairy', icon:'🧈', pack:'Box', unit:'24 x 200g', price:1450, stock:'in' },
   { id:'MZ004', name:'Cimory Yogurt Drink Strawberry 125ml', cat:'dairy', icon:'🍓', pack:'Carton', unit:'40 x 125ml', price:160, stock:'low' },
@@ -96,6 +96,7 @@ let state = {
   query: '',
   cart: JSON.parse(localStorage.getItem('mazi_cart') || '{}'),
   recentSearches: loadRecentSearches(),
+  pendingQty: {},
 };
 
 /* ============ Helpers ============ */
@@ -308,53 +309,112 @@ function getFilteredProducts(){
   });
 }
 
-function cardActionHtml(p){
+function stockMeta(p){
+  if (p.stock === 'out') return { cls: 'out-stock', label: 'Out of Stock' };
+  if (p.stock === 'low') return { cls: 'low-stock', label: 'Low Stock' };
+  return { cls: 'in-stock', label: 'In Stock' };
+}
+
+function cardActionHtml(p, opts){
+  opts = opts || {};
+  const detailed = !!opts.detailed;
   const qty = state.cart[p.id] || 0;
   if (qty > 0){
-    return `<div class="card-qty" data-id="${p.id}">
-      <button class="qty-btn" data-dir="-1" aria-label="Decrease quantity">&minus;</button>
-      <span class="qty-val">${qty}</span>
-      <button class="qty-btn" data-dir="1" aria-label="Increase quantity">&plus;</button>
-    </div>`;
+    return `<button class="card-add card-add-done" data-id="${p.id}">
+      <span class="card-add-success">
+        <span class="card-add-success-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        Added to cart
+      </span>
+    </button>
+    <button class="card-remove-link" data-id="${p.id}">Click to remove</button>`;
   }
-  return `<button class="card-add" data-id="${p.id}">
-    <svg class="card-add-icon" viewBox="0 0 24 24"><path d="M6 6h15l-1.5 9h-12z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="9" cy="20" r="1.4" fill="currentColor"/><circle cx="17" cy="20" r="1.4" fill="currentColor"/></svg>
+  if (p.stock === 'out'){
+    return `<button class="card-add card-add-disabled" disabled>
+      <span class="card-add-label">Out of Stock</span>
+    </button>`;
+  }
+  const pendingQty = detailed ? (state.pendingQty[p.id] || 1) : 1;
+  const qtySelector = detailed ? `
+    <div class="pd-qty-select">
+      <div class="pd-qty-label">Quantity</div>
+      <div class="card-qty pd-qty" data-id="${p.id}">
+        <button class="qty-btn" data-dir="-1" ${pendingQty<=1?'disabled':''}>&minus;</button>
+        <span class="qty-val">${pendingQty}</span>
+        <button class="qty-btn" data-dir="1">&plus;</button>
+      </div>
+    </div>` : '';
+  return `${qtySelector}
+  <button class="card-add" data-id="${p.id}" data-qty="${pendingQty}">
+    <svg class="card-add-icon" viewBox="0 0 24 24"><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="8" cy="21" r="1.4" fill="currentColor"/><circle cx="19" cy="21" r="1.4" fill="currentColor"/></svg>
     <span class="card-add-label">Add to Cart</span>
     <span class="card-add-dots"><span></span><span></span><span></span></span>
+    <span class="card-add-success">
+      <span class="card-add-success-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      Added to cart
+    </span>
   </button>`;
 }
 
-function bindCardSlot(el){
-  if (!el) return;
-  if (el.classList.contains('card-add')){
-    el.addEventListener('click', (e)=>{
+function bindCardSlot(slot){
+  if (!slot) return;
+  const addBtn = slot.classList && slot.classList.contains('card-add') ? slot : slot.querySelector && slot.querySelector('.card-add');
+  const id = slot.dataset.id || (addBtn && addBtn.dataset.id);
+
+  if (addBtn && addBtn.classList.contains('card-add-done')){
+    addBtn.addEventListener('click', (e)=>{ e.stopPropagation(); openCart(); });
+  } else if (addBtn && addBtn.classList.contains('card-add-disabled')){
+    // Out of stock — no action.
+  } else if (addBtn){
+    addBtn.addEventListener('click', (e)=>{
       e.stopPropagation();
-      if (el.classList.contains('loading')) return;
-      el.classList.add('loading');
-      setTimeout(()=>{ addToCart(el.dataset.id); }, 1500);
+      if (addBtn.classList.contains('loading') || addBtn.classList.contains('success')) return;
+      const qty = parseInt(addBtn.dataset.qty || '1', 10);
+      addBtn.classList.add('loading');
+      setTimeout(()=>{
+        addBtn.classList.remove('loading');
+        addBtn.classList.add('success');
+        setTimeout(()=>{ addToCart(addBtn.dataset.id, qty); }, 900);
+      }, 1500);
     });
-  } else if (el.classList.contains('card-qty')){
-    const id = el.dataset.id;
-    el.querySelectorAll('.qty-btn').forEach(b=>{
-      b.addEventListener('click', (e)=>{ e.stopPropagation(); changeQty(id, parseInt(b.dataset.dir, 10)); });
+  }
+
+  const removeLink = slot.classList && slot.classList.contains('card-remove-link') ? slot : slot.querySelector && slot.querySelector('.card-remove-link');
+  if (removeLink){
+    removeLink.addEventListener('click', (e)=>{ e.stopPropagation(); removeFromCart(removeLink.dataset.id); });
+  }
+
+  const pdQty = slot.classList && slot.classList.contains('card-qty') ? slot : slot.querySelector && slot.querySelector('.card-qty');
+  if (pdQty){
+    const qId = pdQty.dataset.id || id;
+    const container = slot.classList && slot.classList.contains('card-action-slot') ? slot : pdQty.closest('.card-action-slot');
+    pdQty.querySelectorAll('.qty-btn').forEach(b=>{
+      b.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        const dir = parseInt(b.dataset.dir, 10);
+        const next = (state.pendingQty[qId] || 1) + dir;
+        state.pendingQty[qId] = Math.max(1, next);
+        if (container){
+          const p = PRODUCTS.find(p=>p.id===qId);
+          container.innerHTML = cardActionHtml(p, { detailed: true }).trim();
+          bindCardSlot(container);
+        }
+      });
     });
   }
 }
 
-function refreshCardSlot(id){
-  // Update every instance of this product's add/qty control on the page —
+function refreshCardSlot(id, detailed){
+  // Update every instance of this product's action controls on the page —
   // it can appear in the main grid, the product detail view, and the
   // similar-products strip all at once.
-  const olds = $$(`.card-add[data-id="${id}"], .card-qty[data-id="${id}"]`);
+  const olds = $$(`.card-action-slot[data-id="${id}"]`);
   if (!olds.length) return;
   const p = PRODUCTS.find(p=>p.id===id);
   olds.forEach(old=>{
-    const temp = document.createElement('div');
-    temp.innerHTML = cardActionHtml(p).trim();
-    const fresh = temp.firstElementChild;
-    fresh.classList.add('swap-in');
-    old.replaceWith(fresh);
-    bindCardSlot(fresh);
+    const isDetailed = typeof detailed === 'boolean' ? detailed : old.classList.contains('pd-actions');
+    old.innerHTML = cardActionHtml(p, { detailed: isDetailed }).trim();
+    old.classList.add('swap-in');
+    bindCardSlot(old);
   });
 }
 
@@ -362,17 +422,20 @@ function productCardHtml(p){
   return `
     <div class="product-card" data-id="${p.id}">
       <div class="card-media">
-        <span class="stock-badge ${p.stock==='in'?'in':''}">${p.stock==='low'?'Low Stock':'In Stock'}</span>
         <img class="card-img" src="${productImg(p)}" alt="${p.name}" loading="lazy" onerror="this.classList.add('img-missing')">
       </div>
       <div class="card-body">
+        <div class="stock-indicator ${stockMeta(p).cls}">
+          <span class="stock-dot"></span>
+          <span class="stock-text">${stockMeta(p).label}</span>
+        </div>
         <div class="card-title">${p.name}</div>
         <div class="card-code">${p.id}</div>
         <div class="card-meta">
           <div class="card-unit"><small>${p.pack}</small><strong>${p.unit}</strong></div>
           <div class="card-price">${fmt(p.price)}</div>
         </div>
-        ${cardActionHtml(p)}
+        <div class="card-action-slot" data-id="${p.id}">${cardActionHtml(p)}</div>
       </div>
     </div>
   `;
@@ -381,7 +444,7 @@ function productCardHtml(p){
 function bindProductCardClicks(container){
   $$('.product-card', container).forEach(card=>{
     card.addEventListener('click', (e)=>{
-      if (e.target.closest('.card-add, .card-qty')) return;
+      if (e.target.closest('.card-add, .card-qty, .card-remove-link')) return;
       openProductView(card.dataset.id);
     });
   });
@@ -419,7 +482,7 @@ function renderProducts(){
 
   $('#productGrid').innerHTML = list.map(p => productCardHtml(p)).join('');
 
-  $$('#productGrid .card-add, #productGrid .card-qty').forEach(bindCardSlot);
+  $$('#productGrid .card-action-slot').forEach(bindCardSlot);
   bindProductCardClicks($('#productGrid'));
 }
 
@@ -427,11 +490,14 @@ function renderProducts(){
 function renderProductDetail(p){
   $('#productDetailCard').innerHTML = `
     <div class="pd-media">
-      <span class="stock-badge ${p.stock==='in'?'in':''}">${p.stock==='low'?'Low Stock':'In Stock'}</span>
       <img src="${productImg(p)}" alt="${p.name}" onerror="this.classList.add('img-missing')">
     </div>
     <div class="pd-info">
       <div>
+        <div class="stock-indicator ${stockMeta(p).cls}">
+          <span class="stock-dot"></span>
+          <span class="stock-text">${stockMeta(p).label}</span>
+        </div>
         <div class="pd-title">${p.name}</div>
         <div class="pd-code">${p.id}</div>
       </div>
@@ -441,10 +507,10 @@ function renderProductDetail(p){
         <div class="pd-price">${fmt(p.price)}</div>
       </div>
       <div class="pd-divider"></div>
-      <div class="pd-actions" data-id="${p.id}">${cardActionHtml(p)}</div>
+      <div class="pd-actions card-action-slot" data-id="${p.id}">${cardActionHtml(p, { detailed: true })}</div>
     </div>
   `;
-  bindCardSlot($('#productDetailCard .card-add') || $('#productDetailCard .card-qty'));
+  bindCardSlot($('#productDetailCard .pd-actions'));
 }
 
 function renderSimilarProducts(p){
@@ -453,7 +519,7 @@ function renderSimilarProducts(p){
   if (!similar.length){ section.hidden = true; return; }
   section.hidden = false;
   $('#similarProductsGrid').innerHTML = similar.map(x => productCardHtml(x)).join('');
-  $$('#similarProductsGrid .card-add, #similarProductsGrid .card-qty').forEach(bindCardSlot);
+  $$('#similarProductsGrid .card-action-slot').forEach(bindCardSlot);
   bindProductCardClicks($('#similarProductsGrid'));
   $('#similarProductsGrid').scrollLeft = 0;
   updateSimilarCarouselArrows();
@@ -482,19 +548,17 @@ function renderOtherProducts(p){
   if (!pool.length){ section.hidden = true; return; }
   section.hidden = false;
   $('#otherProductsGrid').innerHTML = '';
-  loadMoreOtherProducts();
+  loadMoreOtherProducts(Infinity);
 }
-function loadMoreOtherProducts(){
+function loadMoreOtherProducts(count = 4){
   const pool = state.otherProductsPool || [];
   const shown = state.otherProductsShown || [];
-  const next = pool.filter(x => !shown.includes(x.id)).slice(0, 4);
+  const next = pool.filter(x => !shown.includes(x.id)).slice(0, count);
   if (!next.length) return;
   state.otherProductsShown = shown.concat(next.map(x=>x.id));
   $('#otherProductsGrid').insertAdjacentHTML('beforeend', next.map(x => productCardHtml(x)).join(''));
-  $$('#otherProductsGrid .card-add, #otherProductsGrid .card-qty').forEach(bindCardSlot);
+  $$('#otherProductsGrid .card-action-slot').forEach(bindCardSlot);
   bindProductCardClicks($('#otherProductsGrid'));
-  const remaining = pool.length - state.otherProductsShown.length;
-  $('#otherProductsSeeAllBtn').hidden = remaining <= 0;
 }
 function shuffleArray(arr){
   const a = arr.slice();
@@ -534,13 +598,14 @@ function closeOtherFullScreenViews(exceptId){
 }
 
 /* ============ Cart logic ============ */
-function addToCart(id){
-  state.cart[id] = (state.cart[id] || 0) + 1;
+function addToCart(id, qty){
+  qty = qty || 1;
+  state.cart[id] = (state.cart[id] || 0) + qty;
+  delete state.pendingQty[id];
   saveCart();
   updateCartUI();
   refreshCardSlot(id);
-  const p = PRODUCTS.find(p=>p.id===id);
-  showToast(p.name, 'Added to cart');
+  openCart();
 }
 
 function changeQty(id, delta){
@@ -554,6 +619,7 @@ function changeQty(id, delta){
 
 function removeFromCart(id){
   delete state.cart[id];
+  delete state.pendingQty[id];
   saveCart();
   updateCartUI();
   refreshCardSlot(id);
@@ -852,7 +918,7 @@ function markDeliveredOrdersSeen(){
   return changed;
 }
 function updateOrdersNotifBadge(){
-  const count = getUnseenDeliveredCount();
+  const count = getSession() ? getUnseenDeliveredCount() : 0;
   const badge = $('#bnOrdersCount');
   if (badge){
     badge.textContent = count;
@@ -889,6 +955,26 @@ function formatOrderDate(ts){
 function renderOrdersView(){
   markDeliveredOrdersSeen();
   updateOrdersNotifBadge();
+
+  if (!getSession()){
+    $('#ordersCount').textContent = '';
+    $('#ordersCardBody').innerHTML = `
+      <div class="orders-empty">
+        <div class="orders-empty-icon">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 12a4.5 4.5 0 100-9 4.5 4.5 0 000 9zM4.5 20.25a7.5 7.5 0 0115 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <p>Log in to view your orders</p>
+        <a href="#" class="orders-empty-cta" id="ordersEmptyCta">Login / Register</a>
+      </div>
+    `;
+    $('#ordersEmptyCta').addEventListener('click', e=>{
+      e.preventDefault();
+      closeOrdersView();
+      openLogin();
+    });
+    return;
+  }
+
   const orders = getOrders();
   $('#ordersCount').textContent = orders.length ? `${orders.length} order${orders.length!==1?'s':''}` : '';
 
@@ -909,9 +995,24 @@ function renderOrdersView(){
     return;
   }
 
+  const ORDER_VISIBLE_ITEMS = 3;
+  const orderRenderItemRow = (it) => `
+    <div class="order-item-row">
+      <div class="order-item-media"><img src="img/products/${it.id}.png" alt="${it.name}" onerror="this.classList.add('img-missing')"></div>
+      <div class="order-item-info">
+        <div class="order-item-name">${it.name}</div>
+        <div class="order-item-meta">${it.pack} · Qty ${it.qty}</div>
+      </div>
+      <div class="order-item-price">${fmt(it.price*it.qty)}</div>
+    </div>
+  `;
+
   $('#ordersCardBody').innerHTML = `
     <div class="orders-list">
-      ${orders.map(order => `
+      ${orders.map(order => {
+        const visibleItems = order.items.slice(0, ORDER_VISIBLE_ITEMS);
+        const hiddenItems = order.items.slice(ORDER_VISIBLE_ITEMS);
+        return `
         <div class="order-card">
           <div class="order-card-head">
             <div>
@@ -921,16 +1022,16 @@ function renderOrdersView(){
             ${orderStatusBadge(order)}
           </div>
           <div class="order-items">
-            ${order.items.map(it => `
-              <div class="order-item-row">
-                <div class="order-item-media"><img src="img/products/${it.id}.png" alt="${it.name}" onerror="this.classList.add('img-missing')"></div>
-                <div class="order-item-info">
-                  <div class="order-item-name">${it.name}</div>
-                  <div class="order-item-meta">${it.pack} · Qty ${it.qty}</div>
-                </div>
-                <div class="order-item-price">${fmt(it.price*it.qty)}</div>
+            ${visibleItems.map(it => orderRenderItemRow(it)).join('')}
+            ${hiddenItems.length ? `
+              <div class="order-items-hidden" id="orderItemsHidden-${order.id}">
+                ${hiddenItems.map(it => orderRenderItemRow(it)).join('')}
               </div>
-            `).join('')}
+              <button type="button" class="order-see-more-btn" id="orderSeeMoreBtn-${order.id}" data-order-toggle="${order.id}">
+                <span id="orderSeeMoreLabel-${order.id}">See ${hiddenItems.length} more item${hiddenItems.length!==1?'s':''}</span>
+                <svg viewBox="0 0 24 24" class="order-see-more-icon"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+            ` : ''}
           </div>
           <div class="order-total-row">
             <span class="label">Order Total</span>
@@ -955,15 +1056,30 @@ function renderOrdersView(){
             </div>
           ` : ''}
         </div>
-      `).join('')}
+      `;
+      }).join('')}
     </div>
   `;
+  $$('[data-order-toggle]').forEach(btn=>{
+    btn.addEventListener('click', ()=> toggleOrderItems(btn.dataset.orderToggle));
+  });
   $$('[data-cancel-order]').forEach(btn=>{
     btn.addEventListener('click', ()=> openCancelOrderConfirm(btn.dataset.cancelOrder));
   });
   $$('[data-receipt-order]').forEach(btn=>{
     btn.addEventListener('click', ()=> openReceiptModal(btn.dataset.receiptOrder));
   });
+}
+
+function toggleOrderItems(orderId){
+  const hidden = document.getElementById('orderItemsHidden-'+orderId);
+  const btn = document.getElementById('orderSeeMoreBtn-'+orderId);
+  const label = document.getElementById('orderSeeMoreLabel-'+orderId);
+  if (!hidden || !btn || !label) return;
+  const expanded = hidden.classList.toggle('show');
+  btn.classList.toggle('expanded', expanded);
+  const hiddenCount = hidden.querySelectorAll('.order-item-row').length;
+  label.textContent = expanded ? 'See less' : `See ${hiddenCount} more item${hiddenCount!==1?'s':''}`;
 }
 
 function openOrdersView(){
@@ -989,8 +1105,9 @@ function openOrderConfirmModal(order){
 
   $('#ocSub').textContent = `Hi ${firstName}, your order for ${itemCount} product${itemCount!==1?'s':''} has been received and is now pending confirmation from our team.`;
 
-  $('#ocItems').innerHTML = order.items.map((it,i) => `
-    ${i>0 ? '<div class="oc-item-divider"></div>' : ''}
+  const OC_VISIBLE_ITEMS = 4;
+  const ocRenderItemRow = (it, idx) => `
+    ${idx>0 ? '<div class="oc-item-divider"></div>' : ''}
     <div class="oc-item-row">
       <div class="oc-item-media"><img src="img/products/${it.id}.png" alt="${it.name}" onerror="this.classList.add('img-missing')"></div>
       <div class="oc-item-info">
@@ -999,7 +1116,22 @@ function openOrderConfirmModal(order){
       </div>
       <div class="oc-item-price">${fmt(it.price * it.qty)}</div>
     </div>
-  `).join('');
+  `;
+  const ocVisibleItems = order.items.slice(0, OC_VISIBLE_ITEMS);
+  const ocHiddenItems = order.items.slice(OC_VISIBLE_ITEMS);
+
+  $('#ocItems').innerHTML = `
+    ${ocVisibleItems.map((it,i)=> ocRenderItemRow(it,i)).join('')}
+    ${ocHiddenItems.length ? `
+      <div class="oc-items-hidden" id="ocItemsHidden">
+        ${ocHiddenItems.map((it,i)=> ocRenderItemRow(it, i + OC_VISIBLE_ITEMS)).join('')}
+      </div>
+      <button type="button" class="oc-see-more-btn" id="ocSeeMoreBtn" onclick="toggleOcItems()">
+        <span id="ocSeeMoreLabel">See ${ocHiddenItems.length} more item${ocHiddenItems.length!==1?'s':''}</span>
+        <svg viewBox="0 0 24 24" class="oc-see-more-icon"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    ` : ''}
+  `;
 
   $('#ocTotals').innerHTML = `
     <div class="oc-total-row"><span>Subtotal</span><span>${fmt(order.total)}</span></div>
@@ -1029,6 +1161,16 @@ function closeOrderConfirmModal(){
   $('#ocBackdrop').classList.remove('show');
   $('#ocModal').classList.remove('open');
   document.body.style.overflow = '';
+}
+function toggleOcItems(){
+  const hidden = $('#ocItemsHidden');
+  const btn = $('#ocSeeMoreBtn');
+  const label = $('#ocSeeMoreLabel');
+  if (!hidden || !btn || !label) return;
+  const expanded = hidden.classList.toggle('show');
+  btn.classList.toggle('expanded', expanded);
+  const hiddenCount = hidden.querySelectorAll('.oc-item-row').length;
+  label.textContent = expanded ? 'See less' : `See ${hiddenCount} more item${hiddenCount!==1?'s':''}`;
 }
 
 /* ============ Checkout Details (name / mobile / location, asked right before placing the order) ============ */
@@ -1114,15 +1256,8 @@ function closeCheckoutDetailsModal(){
 }
 
 /* ============ Receipt (view / print / save as PDF) ============ */
-const RECEIPT_SIZES = {
-  '58mm':  { label:'58mm',  page:'58mm auto',   width:'58mm'  },
-  '80mm':  { label:'80mm',  page:'80mm auto',   width:'80mm'  },
-  'a5':    { label:'A5',    page:'A5 portrait', width:'148mm' },
-  'a4':    { label:'A4',    page:'A4 portrait', width:'210mm' },
-  'letter':{ label:'Letter',page:'letter portrait', width:'216mm' },
-};
+const RECEIPT_SIZE = { page:'80mm auto', width:'80mm' };
 let _receiptOrderId = null;
-let _receiptSize = '80mm';
 
 function receiptStoreInfo(){
   return {
@@ -1165,20 +1300,6 @@ function renderReceiptContent(order){
   `;
 }
 
-function selectReceiptSize(sizeKey){
-  if (!RECEIPT_SIZES[sizeKey]) return;
-  _receiptSize = sizeKey;
-  const cfg = RECEIPT_SIZES[sizeKey];
-  const isWide = sizeKey === 'a4' || sizeKey === 'a5' || sizeKey === 'letter';
-  $('#receiptPaper').style.width = cfg.width;
-  $('#receiptPaper').className = `receipt-paper receipt-size-${sizeKey}`;
-  $('#receiptModal .receipt-modal-card').classList.toggle('receipt-modal-wide', isWide);
-  $$('.receipt-size-btn').forEach(btn=>{
-    btn.classList.toggle('active', btn.dataset.size === sizeKey);
-  });
-  requestAnimationFrame(fitReceiptPaper);
-}
-
 function fitReceiptPaper(){
   const scroll = $('#receiptPreviewScroll');
   const wrap = $('#receiptPaperWrap');
@@ -1188,11 +1309,9 @@ function fitReceiptPaper(){
   const availWidth = scroll.clientWidth - 24; // account for scroll padding
   const naturalWidth = paper.offsetWidth;
   const naturalHeight = paper.offsetHeight;
-  // Thermal receipts (58mm/80mm) are physically tiny, so scale them UP to
-  // comfortably fill the preview instead of showing true-to-life mm size.
-  // A4/A5/Letter are the opposite problem (too wide) so we still shrink
-  // those down to fit. Either way we just fit the available width, capped
-  // so it never blows up into blurry oversized text.
+  // Thermal receipts are physically tiny, so scale them UP to
+  // comfortably fill the preview instead of showing true-to-life mm size,
+  // capped so it never blows up into blurry oversized text.
   const scale = Math.min(2.4, availWidth / naturalWidth);
   paper.style.transform = `scale(${scale})`;
   wrap.style.height = (naturalHeight * scale) + 'px';
@@ -1204,7 +1323,7 @@ function openReceiptModal(orderId){
   if (!order) return;
   _receiptOrderId = orderId;
   $('#receiptContent').innerHTML = renderReceiptContent(order);
-  selectReceiptSize(_receiptSize);
+  requestAnimationFrame(fitReceiptPaper);
   $('#receiptBackdrop').classList.add('show');
   $('#receiptModal').classList.add('open');
   document.body.style.overflow = 'hidden';
@@ -1217,30 +1336,27 @@ function closeReceiptModal(){
 }
 
 function printReceipt(){
-  const cfg = RECEIPT_SIZES[_receiptSize];
   let styleTag = document.getElementById('receiptPrintStyle');
   if (!styleTag){
     styleTag = document.createElement('style');
     styleTag.id = 'receiptPrintStyle';
     document.head.appendChild(styleTag);
   }
-  styleTag.textContent = `@page{ size:${cfg.page}; margin:${_receiptSize==='58mm'||_receiptSize==='80mm' ? '2mm' : '12mm'}; }`;
+  styleTag.textContent = `@page{ size:${RECEIPT_SIZE.page}; margin:2mm; }`;
   window.print();
 }
 
 function buildReceiptStandaloneHtml(order){
-  const cfg = RECEIPT_SIZES[_receiptSize];
-  const isThermal = _receiptSize === '58mm' || _receiptSize === '80mm';
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>Receipt - Order #${order.id}</title>
 <style>
-  @page{ size:${cfg.page}; margin:${isThermal ? '2mm' : '12mm'}; }
+  @page{ size:${RECEIPT_SIZE.page}; margin:2mm; }
   *{box-sizing:border-box;}
   body{margin:0;background:#F8F7F2;font-family:'Courier New',Courier,monospace;color:#16211C;display:flex;justify-content:center;padding:24px 12px;}
-  .receipt-paper{background:#fff;width:${cfg.width};max-width:100%;box-shadow:0 2px 10px rgba(15,58,46,.14);padding:${isThermal ? '18px 16px' : '28px 26px'};}
+  .receipt-paper{background:#fff;width:${RECEIPT_SIZE.width};max-width:100%;box-shadow:0 2px 10px rgba(15,58,46,.14);padding:18px 16px;}
   .receipt-store-name{font-size:14px;font-weight:700;text-align:center;letter-spacing:.02em;}
   .receipt-store-addr{font-size:10.5px;text-align:center;color:#5C6B63;margin-top:2px;}
   .receipt-divider{border-top:1px dashed #b9b6a9;margin:10px 0;}
@@ -1269,7 +1385,7 @@ function downloadReceipt(){
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `receipt-${order.id}-${_receiptSize}.html`;
+  a.download = `receipt-${order.id}.html`;
   document.body.appendChild(a);
   a.click();
   a.remove();
@@ -1763,9 +1879,6 @@ function init(){
     closeOrderConfirmModal();
     openOrdersView();
   });
-  $$('.receipt-size-btn').forEach(btn=>{
-    btn.addEventListener('click', ()=> selectReceiptSize(btn.dataset.size));
-  });
   window.addEventListener('resize', ()=>{
     if ($('#receiptModal').classList.contains('open')) fitReceiptPaper();
   });
@@ -1776,7 +1889,6 @@ function init(){
 
   $('#profileViewClose').addEventListener('click', closeProfileView);
   $('#productViewClose').addEventListener('click', closeProductView);
-  $('#otherProductsSeeAllBtn').addEventListener('click', loadMoreOtherProducts);
   $('#similarPrevBtn').addEventListener('click', ()=> scrollSimilarCarousel(-1));
   $('#similarNextBtn').addEventListener('click', ()=> scrollSimilarCarousel(1));
   $('#similarProductsGrid').addEventListener('scroll', ()=> updateSimilarCarouselArrows());

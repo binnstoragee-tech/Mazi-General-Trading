@@ -37,14 +37,16 @@
         <img src="img/viber.png" alt="Viber" class="nav-viber-icon">
       </a>
       <button class="icon-btn js-cart-btn" id="cartBtn" aria-label="Cart">
-        <svg viewBox="0 0 24 24"><path d="M6 6h15l-1.5 9h-12z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="9" cy="20" r="1.4" fill="currentColor"/><circle cx="17" cy="20" r="1.4" fill="currentColor"/><path d="M6 6L4.5 2H2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="8" cy="21" r="1.4" fill="currentColor"/><circle cx="19" cy="21" r="1.4" fill="currentColor"/></svg>
         <span class="cart-count js-cart-count" id="cartCount">0</span>
       </button>
-      <button class="login-btn js-login-btn" id="loginBtn">Login / Register</button>
+      <button class="login-btn js-login-btn" id="loginBtn" aria-label="Login / Register">
+        <svg viewBox="0 0 24 24"><path d="M12 12a4.5 4.5 0 100-9 4.5 4.5 0 000 9zM4.5 20.25a7.5 7.5 0 0115 0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
 
       <div class="profile-wrap js-profile-wrap" id="profileWrap" hidden>
         <button class="profile-btn js-profile-toggle" id="profileBtn" aria-label="Account">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="9.8" r="3.3" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M5.5 19.2a7.2 7.2 0 0113 0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          <svg viewBox="0 0 24 24"><path d="M12 12a4.5 4.5 0 100-9 4.5 4.5 0 000 9zM4.5 20.25a7.5 7.5 0 0115 0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
         <div class="profile-dropdown" id="profileDropdown">
           <button type="button" class="js-profile-profile-btn" id="profileProfileBtn">Profile</button>
@@ -249,7 +251,7 @@
     <span class="bn-badge js-orders-notif-count" id="bnOrdersCount" hidden>0</span>
   </button>
   <button class="bn-item" data-action="cart">
-    <svg viewBox="0 0 24 24"><path d="M6 6h15l-1.5 9h-12z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="9" cy="20" r="1.4" fill="currentColor"/><circle cx="17" cy="20" r="1.4" fill="currentColor"/></svg>
+    <svg viewBox="0 0 24 24"><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="8" cy="21" r="1.4" fill="currentColor"/><circle cx="19" cy="21" r="1.4" fill="currentColor"/></svg>
     <span>Cart</span>
     <span class="bn-badge js-cart-count" id="bnCartCount" hidden>0</span>
   </button>
@@ -443,40 +445,51 @@
   </div>
 </div>
 
-<!-- ============ CHECKOUT DETAILS MODAL (name / mobile / location before placing order) ============ -->
+<!-- ============ CHECKOUT DETAILS MODAL (name / mobile / location before placing order) — fullscreen sheet ============ -->
 <div class="onboard-backdrop" id="checkoutDetailsBackdrop"></div>
-<div class="onboard-modal" id="checkoutDetailsModal">
-  <div class="onboard-card">
-    <button type="button" class="onboard-close-btn" id="checkoutDetailsCloseBtn" aria-label="Close">&times;</button>
-    <h2 class="onboard-title">Delivery Details</h2>
-    <p class="onboard-sub">Just need a few details so we can get your order to you.</p>
+<div class="onboard-modal cd-fullscreen" id="checkoutDetailsModal">
+  <div class="onboard-card cd-fullscreen-card">
+    <div class="cd-fullscreen-header">
+      <button type="button" class="onboard-close-btn" id="checkoutDetailsCloseBtn" aria-label="Close">&times;</button>
+      <h2 class="onboard-title">Delivery Details</h2>
+    </div>
 
-    <form id="checkoutDetailsForm" class="onboard-form">
-      <label class="auth-field" id="cdNameField">
-        <span>Full Name</span>
-        <input type="text" id="cdName" placeholder="Juan Dela Cruz" required>
-        <small class="field-error" id="cdNameError" hidden>Please enter your full name.</small>
-      </label>
+    <form id="checkoutDetailsForm" class="onboard-form cd-fullscreen-form">
+      <div class="cd-fullscreen-body">
+        <div class="cd-fullscreen-inner">
+          <p class="onboard-sub">Just need a few details so we can get your order to you.</p>
 
-      <label class="auth-field" id="cdMobileField">
-        <span>Mobile Number</span>
-        <input type="tel" id="cdMobile" placeholder="7xx-xxxx" required>
-        <small class="field-error" id="cdMobileError" hidden>Please enter a valid mobile number.</small>
-      </label>
+          <label class="auth-field" id="cdNameField">
+            <span>Full Name</span>
+            <input type="text" id="cdName" placeholder="Juan Dela Cruz" required>
+            <small class="field-error" id="cdNameError" hidden>Please enter your full name.</small>
+          </label>
 
-      <div class="auth-field" id="cdLocationField">
-        <span>Delivery Location</span>
-        <div class="cd-map-wrap">
-          <div id="cdMap" class="cd-map"></div>
-          <div class="cd-map-hint" id="cdMapHint">Tap the map to drop a pin at your location</div>
+          <label class="auth-field" id="cdMobileField">
+            <span>Mobile Number</span>
+            <input type="tel" id="cdMobile" placeholder="7xx-xxxx" required>
+            <small class="field-error" id="cdMobileError" hidden>Please enter a valid mobile number.</small>
+          </label>
+
+          <div class="auth-field" id="cdLocationField">
+            <span>Delivery Location</span>
+            <div class="cd-map-wrap">
+              <div id="cdMap" class="cd-map"></div>
+              <div class="cd-map-hint" id="cdMapHint">Tap the map to drop a pin at your location</div>
+            </div>
+            <span class="cd-address-label">Exact Address</span>
+            <input type="text" id="cdAddress" class="cd-address-input" placeholder="House name, street, island (e.g. H. Sunny Villa, Machangolhi, Male')" required>
+            <small class="field-error" id="cdPinError" hidden>Please drop a pin for your delivery location.</small>
+            <small class="field-error" id="cdAddressError" hidden>Please type your exact address.</small>
+          </div>
         </div>
-        <span class="cd-address-label">Exact Address</span>
-        <input type="text" id="cdAddress" class="cd-address-input" placeholder="House name, street, island (e.g. H. Sunny Villa, Machangolhi, Male')" required>
-        <small class="field-error" id="cdPinError" hidden>Please drop a pin for your delivery location.</small>
-        <small class="field-error" id="cdAddressError" hidden>Please type your exact address.</small>
       </div>
 
-      <button type="submit" class="onboard-submit-btn">Place Order</button>
+      <div class="cd-fullscreen-footer">
+        <div class="cd-fullscreen-inner">
+          <button type="submit" class="onboard-submit-btn">Place Order</button>
+        </div>
+      </div>
     </form>
   </div>
 </div>
@@ -528,17 +541,6 @@
       <button type="button" class="receipt-close-btn" id="receiptCloseBtn" aria-label="Close">&times;</button>
     </div>
 
-    <div class="receipt-size-bar">
-      <span class="receipt-size-label">Paper size</span>
-      <div class="receipt-size-options" id="receiptSizeOptions">
-        <button type="button" class="receipt-size-btn" data-size="58mm">58mm</button>
-        <button type="button" class="receipt-size-btn" data-size="80mm">80mm</button>
-        <button type="button" class="receipt-size-btn" data-size="a5">A5</button>
-        <button type="button" class="receipt-size-btn" data-size="a4">A4</button>
-        <button type="button" class="receipt-size-btn" data-size="letter">Letter</button>
-      </div>
-    </div>
-
     <div class="receipt-preview-scroll" id="receiptPreviewScroll">
       <div class="receipt-paper-wrap" id="receiptPaperWrap">
         <div class="receipt-paper" id="receiptPaper">
@@ -576,13 +578,15 @@
     </button>
     <div class="nav-actions">
       <button class="icon-btn js-cart-btn" aria-label="Cart">
-        <svg viewBox="0 0 24 24"><path d="M6 6h15l-1.5 9h-12z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="9" cy="20" r="1.4" fill="currentColor"/><circle cx="17" cy="20" r="1.4" fill="currentColor"/><path d="M6 6L4.5 2H2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="8" cy="21" r="1.4" fill="currentColor"/><circle cx="19" cy="21" r="1.4" fill="currentColor"/></svg>
         <span class="cart-count js-cart-count" hidden>0</span>
       </button>
-      <button class="login-btn js-login-btn">Login / Register</button>
+      <button class="login-btn js-login-btn" aria-label="Login / Register">
+        <svg viewBox="0 0 24 24"><path d="M12 12a4.5 4.5 0 100-9 4.5 4.5 0 000 9zM4.5 20.25a7.5 7.5 0 0115 0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
       <div class="profile-wrap js-profile-wrap" hidden>
         <button class="profile-btn js-profile-toggle" aria-label="Account">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="9.8" r="3.3" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M5.5 19.2a7.2 7.2 0 0113 0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          <svg viewBox="0 0 24 24"><path d="M12 12a4.5 4.5 0 100-9 4.5 4.5 0 000 9zM4.5 20.25a7.5 7.5 0 0115 0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
         <div class="profile-dropdown">
           <button type="button" class="js-profile-orders-btn">My Orders</button>
@@ -672,13 +676,15 @@
     </button>
     <div class="nav-actions">
       <button class="icon-btn js-cart-btn" aria-label="Cart">
-        <svg viewBox="0 0 24 24"><path d="M6 6h15l-1.5 9h-12z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="9" cy="20" r="1.4" fill="currentColor"/><circle cx="17" cy="20" r="1.4" fill="currentColor"/><path d="M6 6L4.5 2H2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="8" cy="21" r="1.4" fill="currentColor"/><circle cx="19" cy="21" r="1.4" fill="currentColor"/></svg>
         <span class="cart-count js-cart-count" hidden>0</span>
       </button>
-      <button class="login-btn js-login-btn">Login / Register</button>
+      <button class="login-btn js-login-btn" aria-label="Login / Register">
+        <svg viewBox="0 0 24 24"><path d="M12 12a4.5 4.5 0 100-9 4.5 4.5 0 000 9zM4.5 20.25a7.5 7.5 0 0115 0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
       <div class="profile-wrap js-profile-wrap" hidden>
         <button class="profile-btn js-profile-toggle" aria-label="Account">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="9.8" r="3.3" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M5.5 19.2a7.2 7.2 0 0113 0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          <svg viewBox="0 0 24 24"><path d="M12 12a4.5 4.5 0 100-9 4.5 4.5 0 000 9zM4.5 20.25a7.5 7.5 0 0115 0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
         <div class="profile-dropdown">
           <button type="button" class="js-profile-profile-btn">Profile</button>
@@ -708,13 +714,15 @@
     </button>
     <div class="nav-actions">
       <button class="icon-btn js-cart-btn" aria-label="Cart">
-        <svg viewBox="0 0 24 24"><path d="M6 6h15l-1.5 9h-12z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="9" cy="20" r="1.4" fill="currentColor"/><circle cx="17" cy="20" r="1.4" fill="currentColor"/><path d="M6 6L4.5 2H2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="8" cy="21" r="1.4" fill="currentColor"/><circle cx="19" cy="21" r="1.4" fill="currentColor"/></svg>
         <span class="cart-count js-cart-count" hidden>0</span>
       </button>
-      <button class="login-btn js-login-btn">Login / Register</button>
+      <button class="login-btn js-login-btn" aria-label="Login / Register">
+        <svg viewBox="0 0 24 24"><path d="M12 12a4.5 4.5 0 100-9 4.5 4.5 0 000 9zM4.5 20.25a7.5 7.5 0 0115 0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
       <div class="profile-wrap js-profile-wrap" hidden>
         <button class="profile-btn js-profile-toggle" aria-label="Account">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="9.8" r="3.3" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M5.5 19.2a7.2 7.2 0 0113 0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          <svg viewBox="0 0 24 24"><path d="M12 12a4.5 4.5 0 100-9 4.5 4.5 0 000 9zM4.5 20.25a7.5 7.5 0 0115 0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
         <div class="profile-dropdown">
           <button type="button" class="js-profile-profile-btn">Profile</button>
@@ -745,9 +753,6 @@
     <div class="similar-products-section" id="otherProductsSection" hidden>
       <h3 class="similar-products-title">Other Products</h3>
       <div class="product-grid" id="otherProductsGrid"></div>
-      <div class="see-all-row">
-        <button type="button" class="see-all-btn" id="otherProductsSeeAllBtn">See All</button>
-      </div>
     </div>
   </div>
 </div>
