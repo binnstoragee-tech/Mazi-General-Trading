@@ -1,5 +1,5 @@
 /* ============================================
-   MAZI GENERAL TRADING — store logic
+   MAZI GENERAL TRADE — store logic
 ============================================ */
 
 /* ---------- Category data ---------- */
@@ -66,35 +66,61 @@ const HERO_SLIDES = [
 ];
 
 /* ---------- State ---------- */
-(function migrateRecentSearches(){
+/* Cart, orders, and recent searches are namespaced per account, so logging
+   out hides them and logging back into the same account brings them back. */
+function accountId(){
   try{
-    const old = localStorage.getItem('mazi_recent_searches');
-    if (old !== null){
-      const session = JSON.parse(localStorage.getItem('mazi_session') || 'null');
-      const id = session && session.email ? session.email.toLowerCase() : 'guest';
-      const key = 'mazi_recent_searches_' + id;
-      if (localStorage.getItem(key) === null){
-        localStorage.setItem(key, old);
+    const session = JSON.parse(localStorage.getItem('mazi_session') || 'null');
+    return session && session.email ? session.email.toLowerCase() : 'guest';
+  } catch(e){ return 'guest'; }
+}
+
+(function migratePerAccountData(){
+  // Older versions of the site stored these globally (shared by every
+  // account on the device). Move any leftover data into the "guest" bucket
+  // once, so nothing is silently lost.
+  const migrations = [
+    ['mazi_recent_searches', 'mazi_recent_searches_guest'],
+    ['mazi_cart', 'mazi_cart_guest'],
+    ['mazi_orders', 'mazi_orders_guest'],
+  ];
+  migrations.forEach(([oldKey, newKey])=>{
+    try{
+      const old = localStorage.getItem(oldKey);
+      if (old !== null){
+        if (localStorage.getItem(newKey) === null){
+          localStorage.setItem(newKey, old);
+        }
+        localStorage.removeItem(oldKey);
       }
-      localStorage.removeItem('mazi_recent_searches');
-    }
-  } catch(e){}
+    } catch(e){}
+  });
 })();
 
 function recentSearchesKey(){
-  const session = getSession();
-  const id = session && session.email ? session.email.toLowerCase() : 'guest';
-  return 'mazi_recent_searches_' + id;
+  return 'mazi_recent_searches_' + accountId();
 }
 function loadRecentSearches(){
   try{ return JSON.parse(localStorage.getItem(recentSearchesKey()) || '[]'); }
   catch(e){ return []; }
 }
 
+function cartKey(){
+  return 'mazi_cart_' + accountId();
+}
+function loadCart(){
+  try{ return JSON.parse(localStorage.getItem(cartKey()) || '{}'); }
+  catch(e){ return {}; }
+}
+
+function ordersKey(){
+  return 'mazi_orders_' + accountId();
+}
+
 let state = {
   category: 'all',
   query: '',
-  cart: JSON.parse(localStorage.getItem('mazi_cart') || '{}'),
+  cart: loadCart(),
   recentSearches: loadRecentSearches(),
   pendingQty: {},
 };
@@ -111,7 +137,7 @@ const $ = sel => document.querySelector(sel);
 const $$ = (sel, root) => Array.from((root || document).querySelectorAll(sel));
 
 function saveCart(){
-  localStorage.setItem('mazi_cart', JSON.stringify(state.cart));
+  localStorage.setItem(cartKey(), JSON.stringify(state.cart));
 }
 
 function saveRecentSearches(){
@@ -663,6 +689,15 @@ function updateCartUI(){
             <button data-qty-plus="${id}">&plus;</button>
           </div>
         </div>
+        <button class="cart-row-delete" data-remove="${id}" aria-label="Remove item" title="Remove item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 6h18"/>
+            <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+            <line x1="10" y1="11" x2="10" y2="17"/>
+            <line x1="14" y1="11" x2="14" y2="17"/>
+          </svg>
+        </button>
       </div>
     `;
   }).join('');
@@ -709,12 +744,18 @@ function getSession(){
 function setSession(data){
   localStorage.setItem('mazi_session', JSON.stringify(data));
   state.recentSearches = loadRecentSearches();
+  state.cart = loadCart();
+  updateCartUI();
+  updateOrdersNotifBadge();
   refreshOpenSearchPanel();
   renderAuthButton();
 }
 function clearSession(){
   localStorage.removeItem('mazi_session');
   state.recentSearches = loadRecentSearches();
+  state.cart = loadCart();
+  updateCartUI();
+  updateOrdersNotifBadge();
   refreshOpenSearchPanel();
   renderAuthButton();
 }
@@ -833,10 +874,10 @@ const ORDER_STEPS = [
 const ORDER_STAGE_MINUTES = [0, 1, 3, 6]; // minutes after placement each step unlocks
 
 function getOrders(){
-  return JSON.parse(localStorage.getItem('mazi_orders') || '[]');
+  return JSON.parse(localStorage.getItem(ordersKey()) || '[]');
 }
 function saveOrders(orders){
-  localStorage.setItem('mazi_orders', JSON.stringify(orders));
+  localStorage.setItem(ordersKey(), JSON.stringify(orders));
 }
 
 function orderStatusIndex(order){
@@ -908,24 +949,26 @@ function showCancelButton(order){
   return !order.cancelled && orderStatusIndex(order) < ORDER_STEPS.length - 1;
 }
 
-/* ============ Delivered-order notifications ============ */
+/* ============ Order notifications (glass popups + Orders badge) ============ */
 function isDelivered(order){
   return !order.cancelled && orderStatusIndex(order) === ORDER_STEPS.length - 1;
 }
-function getUnseenDeliveredCount(){
-  return getOrders().filter(o => isDelivered(o) && !o.deliveredSeen).length;
+// An order lights up the Orders badge once it's confirmed as "successful"
+// (moved past Placed into Processing) and again when it's Delivered.
+function getUnseenNotifCount(){
+  return getOrders().filter(o => !o.cancelled && o.badgeUnseen).length;
 }
-function markDeliveredOrdersSeen(){
+function markOrdersSeen(){
   const orders = getOrders();
   let changed = false;
   orders.forEach(o=>{
-    if (isDelivered(o) && !o.deliveredSeen){ o.deliveredSeen = true; changed = true; }
+    if (o.badgeUnseen){ o.badgeUnseen = false; changed = true; }
   });
   if (changed) saveOrders(orders);
   return changed;
 }
 function updateOrdersNotifBadge(){
-  const count = getSession() ? getUnseenDeliveredCount() : 0;
+  const count = getSession() ? getUnseenNotifCount() : 0;
   const badge = $('#bnOrdersCount');
   if (badge){
     badge.textContent = count;
@@ -935,6 +978,275 @@ function updateOrdersNotifBadge(){
     el.classList.toggle('has-notif', count > 0);
   });
 }
+
+const ORDER_NOTIF_ICONS = {
+  processing: `<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 7v5l3.5 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  delivery: `<svg viewBox="0 0 24 24" fill="none"><path d="M3 7h11v8H3z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M14 11h4l3 3v1h-7z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="7.5" cy="18" r="1.6" fill="currentColor"/><circle cx="17.5" cy="18" r="1.6" fill="currentColor"/></svg>`,
+  delivered: `<svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+};
+const ORDER_NOTIF_SUBS = {
+  processing: "We're getting your order ready.",
+  delivery: 'Your rider is on the way.',
+  delivered: 'Your order has arrived. Enjoy!',
+};
+function orderNotifClass(idx){
+  return idx===1?'processing':idx===2?'delivery':'delivered';
+}
+
+// Shows one glass notification card for an order's new status. Cards stack
+// in #orderNotifStack, auto-dismiss after 5s, and tapping one opens Orders.
+function showOrderNotif(order, idx){
+  const stack = $('#orderNotifStack');
+  if (!stack) return;
+  const step = ORDER_STEPS[idx];
+  const cls = orderNotifClass(idx);
+
+  const el = document.createElement('div');
+  el.className = 'order-notif';
+  el.innerHTML = `
+    <span class="order-notif-icon ${cls}">${ORDER_NOTIF_ICONS[cls]}</span>
+    <span class="order-notif-body">
+      <span class="order-notif-top">
+        <span class="order-notif-title">${step.label}</span>
+        <button type="button" class="order-notif-close" aria-label="Dismiss">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+      </span>
+      <span class="order-notif-sub">${ORDER_NOTIF_SUBS[cls]}</span>
+      <span class="order-notif-id">Order #${order.id}</span>
+    </span>
+  `;
+
+  let timer;
+  const remove = ()=>{
+    clearTimeout(timer);
+    el.classList.remove('show');
+    el.classList.add('hide');
+    setTimeout(()=>{ if (el.parentNode) el.parentNode.removeChild(el); }, 320);
+  };
+  el.addEventListener('click', (e)=>{
+    if (e.target.closest('.order-notif-close')){ e.stopPropagation(); remove(); return; }
+    remove();
+    openOrdersView();
+  });
+
+  stack.appendChild(el);
+  requestAnimationFrame(()=> requestAnimationFrame(()=> el.classList.add('show')));
+  timer = setTimeout(remove, 5000);
+}
+
+// Polls each order's time-based status against what's already been notified.
+// Fires a glass popup the moment an order reaches Processing, Out for
+// Delivery, or Delivered — and lights up the Orders badge for the
+// "successful" (Processing) and Delivered milestones.
+function checkOrderUpdates(){
+  if (!getSession()) return;
+  const orders = getOrders();
+  let changed = false;
+  let badgeChanged = false;
+
+  orders.forEach(o=>{
+    if (o.cancelled) return;
+    if (o.notifiedIdx === undefined) o.notifiedIdx = 0;
+    const idx = orderStatusIndex(o);
+    if (idx > o.notifiedIdx){
+      showOrderNotif(o, idx);
+      fireDeviceNotification(o, idx);
+      if (idx === 1 || idx === ORDER_STEPS.length - 1){
+        o.badgeUnseen = true;
+        badgeChanged = true;
+      }
+      o.notifiedIdx = idx;
+      changed = true;
+    }
+  });
+
+  if (changed) saveOrders(orders);
+  if (badgeChanged) updateOrdersNotifBadge();
+}
+
+/* ============ Device (OS-level) order notifications ============ */
+// These are real notifications from the browser/OS — they can show on a
+// phone's lock screen or a desktop's notification tray, even if this tab
+// isn't focused, as long as the browser is running.
+const NOTIF_ICON = 'img/logo.png';
+
+function notifSupported(){
+  return typeof window !== 'undefined' && 'Notification' in window;
+}
+
+// App-level on/off switch, separate from the browser's own permission.
+// Browser permission can only ever be granted once (the "Enable" prompt);
+// after that, the user turns notifications on/off for the app itself from
+// their Profile page instead of being asked again.
+function getNotifPref(){
+  return localStorage.getItem('mazi_notif_pref') || 'on';
+}
+function setNotifPref(val){
+  localStorage.setItem('mazi_notif_pref', val);
+}
+
+function registerNotifServiceWorker(){
+  if (!('serviceWorker' in navigator)) return Promise.resolve(null);
+  return navigator.serviceWorker.register('sw.js').catch(()=> null);
+}
+
+// Must be called from inside a real click/tap so mobile browsers allow the
+// permission prompt. Calls back with the resulting permission string
+// ('granted' | 'denied' | 'default' | 'unsupported').
+function requestDeviceNotifPermission(onDone){
+  if (!notifSupported()){ if (onDone) onDone('unsupported'); return; }
+  if (Notification.permission !== 'default'){ if (onDone) onDone(Notification.permission); return; }
+  registerNotifServiceWorker();
+  Notification.requestPermission().then(perm=>{ if (onDone) onDone(perm); });
+}
+
+// Fires a real device notification for an order status change. Prefers the
+// service worker path (required on Android Chrome — the plain Notification
+// constructor is blocked there) and falls back to the constructor directly
+// on desktop browsers that support it without a worker.
+function fireDeviceNotification(order, idx){
+  if (!notifSupported() || Notification.permission !== 'granted') return;
+  if (getNotifPref() === 'off') return;
+  const step = ORDER_STEPS[idx];
+  const cls = orderNotifClass(idx);
+  const title = `${step.label} — Order #${order.id}`;
+  const options = {
+    body: ORDER_NOTIF_SUBS[cls],
+    icon: NOTIF_ICON,
+    badge: NOTIF_ICON,
+    tag: `mazi-order-${order.id}`,
+    renotify: true,
+    data: { url: 'index.html?open=orders' },
+  };
+  if ('serviceWorker' in navigator){
+    navigator.serviceWorker.ready.then(reg=> reg.showNotification(title, options))
+      .catch(()=>{ try{ new Notification(title, options); } catch(err){} });
+  } else {
+    try{ new Notification(title, options); } catch(err){}
+  }
+}
+
+// Inline banner (shown in the Orders view) offering to turn device
+// notifications on. Unlike before, it no longer disappears once granted —
+// instead it morphs into a persistent on/off toggle right there, so the
+// person can turn order + future offer/sale alerts back on or off anytime
+// without digging into Profile settings. Only fully hides itself when
+// notifications are unsupported or the browser permission was denied.
+function initOrdersNotifPrompt(){
+  const el = $('#ordersNotifPrompt');
+  const action = $('#ordersNotifAction');
+  if (!el || !action) return;
+
+  if (!notifSupported() || !getSession() || Notification.permission === 'denied'){
+    el.hidden = true;
+    return;
+  }
+  el.hidden = false;
+
+  if (Notification.permission === 'granted'){
+    renderNotifToggle(action, 'ordersNotifToggle');
+  } else {
+    renderNotifEnableButton(action, 'ordersNotifBtn', ()=> renderNotifToggle(action, 'ordersNotifToggle'), el);
+  }
+}
+
+// Renders the "Enable" button with the add-to-cart-style loading → success
+// animation. On success, calls onEnabled() to swap in the toggle.
+function renderNotifEnableButton(action, btnId, onEnabled, promptEl){
+  action.innerHTML = `
+    <button type="button" class="notif-prompt-btn" id="${btnId}">
+      <span class="notif-btn-label">Enable</span>
+      <span class="notif-btn-dots"><span></span><span></span><span></span></span>
+      <span class="notif-btn-success">
+        <span class="notif-btn-success-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        Enabled
+      </span>
+    </button>`;
+  const btn = document.getElementById(btnId);
+  if (!btn) return;
+  btn.addEventListener('click', ()=>{
+    if (btn.classList.contains('loading') || btn.classList.contains('success')) return;
+    btn.classList.add('loading');
+    requestDeviceNotifPermission((perm)=>{
+      // Keep the loading state on screen briefly (same rhythm as Add to
+      // Cart) so the animation reads as real work happening, not a flicker.
+      setTimeout(()=>{
+        btn.classList.remove('loading');
+        if (perm === 'granted'){
+          setNotifPref('on');
+          btn.classList.add('success');
+          setTimeout(onEnabled, 900);
+        } else if (perm === 'denied'){
+          if (promptEl) promptEl.hidden = true;
+        }
+        // perm === 'default' (dismissed) — button just resets, user can retry
+      }, 900);
+    });
+  });
+}
+
+// Renders the persistent on/off toggle shown once permission is granted.
+// Toggling plays the same shrink-to-circle loading animation as Add to Cart:
+// tap -> collapses into a small pulsing-dot circle -> expands back showing
+// the new On/Off state.
+function renderNotifToggle(action, toggleId){
+  const on = getNotifPref() !== 'off';
+  action.innerHTML = `
+    <div class="notif-inline-toggle-wrap" id="${toggleId}Wrap">
+      <span class="notif-toggle-caption" id="${toggleId}Caption">${on ? 'On' : 'Off'}</span>
+      <label class="pv-toggle-switch" aria-label="Order &amp; offer notifications">
+        <input type="checkbox" id="${toggleId}" ${on ? 'checked' : ''}>
+        <span class="pv-toggle-slider"></span>
+      </label>
+    </div>`;
+  const wrap = document.getElementById(`${toggleId}Wrap`);
+  const toggle = document.getElementById(toggleId);
+  if (!toggle) return;
+  toggle.addEventListener('change', ()=>{
+    const isOn = toggle.checked;
+    if (wrap) wrap.innerHTML = `<span class="notif-toggle-dots"><span></span><span></span><span></span></span>`;
+    setTimeout(()=>{
+      setNotifPref(isOn ? 'on' : 'off');
+      showToast(isOn ? "Notifications on — you'll also hear about offers & sales" : 'Notifications turned off');
+      renderNotifToggle(action, toggleId);
+    }, 700);
+  });
+}
+
+// Order-notifications toggle shown on the Profile page. Only appears once
+// the browser permission has actually been granted (there's nothing to
+// toggle before that) — this is where the user turns notifications back
+// off if they no longer want them, without needing browser-level settings.
+function initProfileNotifToggle(){
+  const card = $('#pvNotifCard');
+  const toggle = $('#pvNotifToggle');
+  if (!card || !toggle) return;
+
+  if (!notifSupported() || Notification.permission !== 'granted'){
+    card.hidden = true;
+    return;
+  }
+  card.hidden = false;
+  toggle.checked = getNotifPref() !== 'off';
+
+  if (!toggle._wired){
+    toggle._wired = true;
+    toggle.addEventListener('change', ()=>{
+      setNotifPref(toggle.checked ? 'on' : 'off');
+      showToast(toggle.checked ? 'Order notifications enabled' : 'Order notifications turned off');
+    });
+  }
+}
+
+/* ============ Install App (PWA) ============ */
+// Intentionally no custom install button/modal here — the manifest.json +
+// service worker below already make the site installable, and browsers
+// that support it (Chrome/Edge desktop & Android) show their own native
+// "Install" icon in the address bar / menu automatically. Building a
+// custom prompt on top of that used to call preventDefault() on
+// beforeinstallprompt, which suppressed that native icon — removed so the
+// browser's own install UI is what people see and use.
 
 function cancelOrder(orderId){
   const orders = getOrders();
@@ -960,8 +1272,9 @@ function formatOrderDate(ts){
 }
 
 function renderOrdersView(){
-  markDeliveredOrdersSeen();
+  markOrdersSeen();
   updateOrdersNotifBadge();
+  initOrdersNotifPrompt();
 
   if (!getSession()){
     $('#ordersCount').textContent = '';
@@ -1195,7 +1508,7 @@ let _receiptOrderId = null;
 
 function receiptStoreInfo(){
   return {
-    name: 'MAZI General Trading',
+    name: 'MAZI General Trade',
     addr: "Male', Republic of Maldives",
     email: 'info@mazitrading.mv',
   };
@@ -1337,6 +1650,7 @@ function openProfileView(){
   $('#pvCurrentPassword').value = '';
   $('#pvNewPassword').value = '';
   $('#pvConfirmPassword').value = '';
+  initProfileNotifToggle();
   closeOtherFullScreenViews('profileView');
   $('#profileView').classList.add('open');
   document.body.style.overflow = 'hidden';
@@ -1683,6 +1997,25 @@ function init(){
   updateOrdersNotifBadge();
   setInterval(updateOrdersNotifBadge, 20000);
 
+  // Live order-status glass notifications: check immediately, then poll,
+  // then re-check whenever the tab/app regains focus.
+  checkOrderUpdates();
+  setInterval(checkOrderUpdates, 5000);
+  document.addEventListener('visibilitychange', ()=>{
+    if (!document.hidden) checkOrderUpdates();
+  });
+
+  // Register the notifications service worker up front (permission is
+  // requested separately, via the "Enable" prompt) and listen for taps on
+  // a device notification so we can open the Orders view in-app.
+  registerNotifServiceWorker();
+  if ('serviceWorker' in navigator){
+    navigator.serviceWorker.addEventListener('message', (e)=>{
+      if (e.data && e.data.type === 'mazi-open-orders') openOrdersView();
+    });
+  }
+
+
   $('#closeCart').addEventListener('click', closeCart);
   $('#drawerBackdrop').addEventListener('click', closeCart);
   $('#checkoutBtn').addEventListener('click', ()=>{
@@ -1936,7 +2269,19 @@ function init(){
 function handleOpenParam(){
   const params = new URLSearchParams(window.location.search);
   const open = params.get('open');
-  if (!open) return;
+  const cat = params.get('cat');
+
+  if (cat){
+    state.category = cat;
+    renderCategoryNav();
+    renderProducts();
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+
+  if (!open){
+    if (cat) history.replaceState(null, '', window.location.pathname + window.location.hash);
+    return;
+  }
 
   const isMobile = window.matchMedia('(max-width: 980px)').matches;
 

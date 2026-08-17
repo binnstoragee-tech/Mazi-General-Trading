@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Checkout — MAZI General Trading</title>
+<title>Checkout — MAZI General Trade</title>
 <link rel="icon" type="image/png" href="img/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -37,11 +37,16 @@
 
         <!-- 1. Contact -->
         <div class="co-section">
-          <div class="co-section-head"><span class="co-num">1</span>Contact</div>
+          <div class="co-section-head"><svg class="co-section-icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>Contact</div>
           <div class="co-contact-box">
             <div class="co-contact-name" id="coContactName">Signed in as —</div>
             <div class="co-contact-mobile" id="coContactMobile"></div>
           </div>
+          <label class="co-field" id="coNameField">
+            <span>Full Name</span>
+            <input type="text" id="coName" placeholder="Your full name" required>
+            <small class="co-field-error">Please enter your name.</small>
+          </label>
           <label class="co-field" id="coMobileField">
             <span>Mobile Number</span>
             <input type="tel" id="coMobile" placeholder="7xx-xxxx" required>
@@ -51,24 +56,33 @@
 
         <!-- 2. Review items -->
         <div class="co-section">
-          <div class="co-section-head"><span class="co-num">2</span>Review Your Items<span class="co-item-count" id="coItemCount"></span></div>
+          <div class="co-section-head"><svg class="co-section-icon" viewBox="0 0 24 24"><path d="M6 8h12l-1 12H7L6 8z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 8V6a3 3 0 016 0v2" fill="none" stroke="currentColor" stroke-width="1.7"/></svg><span class="co-num">1</span>Review Your Items<span class="co-item-count" id="coItemCount"></span></div>
           <div class="co-items" id="coItems"></div>
         </div>
 
         <!-- 3. Delivery preferences -->
         <div class="co-section">
-          <div class="co-section-head"><span class="co-num">3</span>Delivery Preferences</div>
+          <div class="co-section-head"><svg class="co-section-icon" viewBox="0 0 24 24"><path d="M2 6h11v9H2z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M13 9h4l4 3.5V15h-8z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><circle cx="6.5" cy="17.5" r="1.6" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="17" cy="17.5" r="1.6" fill="none" stroke="currentColor" stroke-width="1.7"/></svg><span class="co-num">2</span>Delivery Preferences</div>
           <div class="co-tabs" id="coDeliveryTabs">
             <button type="button" class="co-tab active" data-method="pickup">
-              <span class="co-tab-title">Showroom Pickup</span>
+              <span class="co-tab-title">
+                <svg class="co-tab-icon" viewBox="0 0 24 24"><path d="M12 2c-3.6 0-6.5 2.9-6.5 6.5 0 4.9 6.5 13 6.5 13s6.5-8.1 6.5-13C18.5 4.9 15.6 2 12 2z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><circle cx="12" cy="8.5" r="2.3" fill="none" stroke="currentColor" stroke-width="1.7"/></svg>
+                Showroom Pickup
+              </span>
               <span class="co-tab-sub">Male' — always free</span>
             </button>
             <button type="button" class="co-tab" data-method="delivery">
-              <span class="co-tab-title">Delivery</span>
+              <span class="co-tab-title">
+                <svg class="co-tab-icon" viewBox="0 0 24 24"><path d="M2 6h11v9H2z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M13 9h4l4 3.5V15h-8z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><circle cx="6.5" cy="17.5" r="1.6" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="17" cy="17.5" r="1.6" fill="none" stroke="currentColor" stroke-width="1.7"/></svg>
+                Delivery
+              </span>
               <span class="co-tab-sub">Home delivery with a booked time slot</span>
             </button>
             <button type="button" class="co-tab" data-method="boat">
-              <span class="co-tab-title">Boat Delivery</span>
+              <span class="co-tab-title">
+                <svg class="co-tab-icon" viewBox="0 0 24 24"><path d="M4 13l1.6 5.2c.2.6.8 1 1.4 1h10c.6 0 1.2-.4 1.4-1L20 13H4z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M6 13V6h8l3 7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 6V3h3v3" fill="none" stroke="currentColor" stroke-width="1.7"/></svg>
+                Boat Delivery
+              </span>
               <span class="co-tab-sub">Send via your arranged boat or dhoni</span>
             </button>
           </div>
@@ -106,12 +120,10 @@
             </div>
             <div class="co-row-2">
               <label class="co-field" id="coHouseField">
-                <span>House / Apt Name</span>
                 <input type="text" id="coHouse" placeholder="House / Apt name">
                 <small class="co-field-error">Please enter your house/apartment name.</small>
               </label>
               <label class="co-field">
-                <span>Landmark (optional)</span>
                 <input type="text" id="coLandmark" placeholder="Landmark (optional)">
               </label>
             </div>
@@ -120,7 +132,7 @@
               <textarea id="coDeliveryNote" class="co-textarea" placeholder="e.g. Gate code, leave with neighbour, call on arrival..."></textarea>
             </label>
 
-            <div class="co-label-sm">Island Delivery Estimate</div>
+            <div class="co-label-sm co-icon-label"><svg class="co-inline-icon" viewBox="0 0 24 24"><path d="M2 6h11v9H2z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M13 9h4l4 3.5V15h-8z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><circle cx="6.5" cy="17.5" r="1.6" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="17" cy="17.5" r="1.6" fill="none" stroke="currentColor" stroke-width="1.7"/></svg>Island Delivery Estimate</div>
             <div class="co-hours-box">
               <div class="co-estimate-row">
                 <span>
@@ -203,14 +215,14 @@
 
         <!-- 4. Payment -->
         <div class="co-section">
-          <div class="co-section-head"><span class="co-num">4</span>Payment</div>
+          <div class="co-section-head"><svg class="co-section-icon" viewBox="0 0 24 24"><path d="M3 21h18M4 21V10M20 21V10M2 10l10-6 10 6M6 10v11M10 10v11M14 10v11M18 10v11" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="co-num">3</span>Payment</div>
           <div class="co-payment-box">
-            <div class="co-payment-label">Bank transfer &mdash; payment slip required</div>
+            <div class="co-payment-label"><svg class="co-inline-icon" viewBox="0 0 24 24"><path d="M3 21h18M4 21V10M20 21V10M2 10l10-6 10 6M6 10v11M10 10v11M14 10v11M18 10v11" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>Bank transfer &mdash; payment slip required</div>
             <div class="co-payment-grid">
               <div class="co-bank-panel">
                 <div class="co-bank-label">Bank transfer details</div>
                 <div class="co-bank-name">Bank of Maldives</div>
-                <div class="co-bank-company">MAZI GENERAL TRADING PVT LTD</div>
+                <div class="co-bank-company">MAZI GENERAL TRADE</div>
                 <div class="co-bank-accounts">
                   <div><span class="co-bank-tag">MVR</span><strong>7730-0000-000-001</strong></div>
                   <div><span class="co-bank-tag">USD</span><strong>7730-0000-000-002</strong></div>
@@ -220,7 +232,7 @@
               <div class="co-qr-panel">
                 <div class="co-qr-label">Scan National QR to Pay</div>
                 <div class="co-qr-box">
-                  <img src="img/payment-qr.png" alt="MAZI General Trading payment QR" class="co-qr-img" onerror="this.classList.add('img-missing')">
+                  <img src="img/payment-qr.png" alt="MAZI General Trade payment QR" class="co-qr-img" onerror="this.classList.add('img-missing')">
                   <div class="co-qr-fallback">QR CODE</div>
                 </div>
                 <div class="co-qr-caption">Use your banking app to scan and pay the exact order total.</div>
@@ -249,6 +261,14 @@
           <div class="co-summary-row co-total"><span>Total (MVR)</span><span id="coTotal">MVR 0.00</span></div>
           <p class="co-price-note">Product prices include GST.</p>
 
+          <label class="co-terms-check" id="coTermsField">
+            <input type="checkbox" id="coTerms">
+            <span class="co-terms-box" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M4 12l5 5 11-11" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <span>I agree with the <a href="terms.html" target="_blank" rel="noopener">terms and conditions</a></span>
+          </label>
+          <small class="co-field-error" id="coTermsError" style="display:none;">Please agree to the terms and conditions to continue.</small>
 
           <button type="submit" class="co-place-btn" id="coSubmitBtn">Place Your Order</button>
         </div>
@@ -272,6 +292,19 @@
   </div>
   <h2 class="co-success-title">Order Placed!</h2>
   <p class="co-success-sub" id="coSuccessSub">Your order has been received and is now pending confirmation from our team.</p>
+
+  <div class="notif-prompt" id="coNotifPrompt" hidden>
+    <div class="notif-prompt-icon">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M13.73 21a2 2 0 01-3.46 0" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="notif-prompt-text">
+      <strong>Get notified on this device</strong>
+      <span>We'll alert your phone or computer about order updates, offers & sales.</span>
+    </div>
+    <div class="notif-prompt-action" id="coNotifAction">
+      <button type="button" class="notif-prompt-btn" id="coNotifBtn">Enable</button>
+    </div>
+  </div>
 
   <div class="co-success-box">
     <div class="co-summary-row co-total" style="margin-bottom:0;"><span>Order Total</span><span id="coSuccessTotal">MVR 0.00</span></div>
@@ -300,6 +333,64 @@
     <a href="index.html" class="co-btn co-btn-ghost">Continue Shopping</a>
   </div>
 </div>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <img src="img/logo.png" alt="MAZI General Trade" class="footer-logo">
+        <p class="footer-tagline">Grocery &amp; convenience wholesale, delivered across Male' and beyond.</p>
+        <a href="viber://chat?number=" class="footer-viber-btn" target="_blank" rel="noopener">
+          <img src="img/viber.png" alt="Viber" class="footer-viber-icon">
+          Chat with us on Viber
+        </a>
+      </div>
+
+      <div class="footer-col">
+        <h4>Shop</h4>
+        <ul>
+          <li><a href="index.html?cat=all">All Categories</a></li>
+          <li><a href="index.html?cat=dairy">Dairy</a></li>
+          <li><a href="index.html?cat=beverages">Beverages</a></li>
+          <li><a href="index.html?cat=household">Household &amp; Cleaning</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Account</h4>
+        <ul>
+          <li><a href="index.html?open=login">Login / Register</a></li>
+          <li><a href="index.html?open=orders">My Orders</a></li>
+          <li><a href="index.html?open=cart">Cart</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Company</h4>
+        <ul>
+          <li><a href="privacy.html">Privacy Policy</a></li>
+          <li><a href="terms.html">Terms &amp; Conditions</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Get in Touch</h4>
+        <ul class="footer-contact">
+          <li>Male', Republic of Maldives</li>
+          <li><a href="mailto:info@mazitrading.mv">info@mazitrading.mv</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <span>Copyright 2026 © MAZI GENERAL TRADE</span>
+      <div class="footer-bottom-links">
+        <a href="privacy.html">Privacy</a>
+        <a href="terms.html">Terms</a>
+      </div>
+    </div>
+  </div>
+</footer>
 
 <script src="page-transitions.js"></script>
 <script src="checkout.js"></script>

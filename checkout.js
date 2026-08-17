@@ -1,5 +1,5 @@
 /* ============================================
-   MAZI GENERAL TRADING — checkout page logic
+   MAZI GENERAL TRADE — checkout page logic
    Standalone page: reads/writes the same
    localStorage keys as the main store (script.js)
 ============================================ */
@@ -43,26 +43,26 @@ const PRODUCTS = [
 ];
 
 const ATOLLS = {
-  'HA (Haa Alif)': ['Dhidhdhoo', 'Hoarafushi', 'Kelaa', 'Ihavandhoo'],
-  'HDh (Haa Dhaalu)': ['Kulhudhuffushi', 'Nolhivaranfaru', 'Hanimaadhoo'],
-  'Sh (Shaviyani)': ['Funadhoo', 'Feydhoo', 'Milandhoo'],
-  'N (Noonu)': ['Manadhoo', 'Holhudhoo', 'Velidhoo'],
-  'R (Raa)': ['Ungoofaaru', 'Dhuvaafaru', 'Alifushi'],
-  'B (Baa)': ['Eydhafushi', 'Thulhaadhoo', 'Dharavandhoo'],
-  'Lh (Lhaviyani)': ['Naifaru', 'Hinnavaru'],
-  'K (Kaafu)': ["Male'", "Hulhumale'", 'Thulusdhoo', 'Guraidhoo', 'Maafushi'],
-  'AA (Alifu Alifu)': ['Rasdhoo', 'Thoddoo', 'Ukulhas'],
-  'ADh (Alifu Dhaalu)': ['Mahibadhoo', 'Dhigurah', 'Dhangethi'],
-  'V (Vaavu)': ['Felidhoo', 'Keyodhoo'],
-  'M (Meemu)': ['Muli', 'Naalaafushi', 'Dhiggaru'],
-  'F (Faafu)': ['Nilandhoo', 'Magoodhoo'],
-  'Dh (Dhaalu)': ['Kudahuvadhoo', 'Meedhoo'],
-  'Th (Thaa)': ['Veymandoo', 'Thimarafushi', 'Guraidhoo'],
-  'L (Laamu)': ['Fonadhoo', 'Gan', 'Maabaidhoo'],
-  'GA (Gaafu Alifu)': ['Villingili', 'Maamendhoo'],
-  'GDh (Gaafu Dhaalu)': ['Thinadhoo', 'Madaveli'],
-  'Gn (Gnaviyani)': ['Fuvahmulah'],
-  'S (Addu)': ['Hithadhoo', 'Maradhoo', 'Feydhoo', 'Hulhudhoo'],
+  'Haa Alif (HA)': ['Dhidhdhoo', 'Hoarafushi', 'Kelaa', 'Ihavandhoo'],
+  'Haa Dhaalu (HDh)': ['Kulhudhuffushi', 'Nolhivaranfaru', 'Hanimaadhoo'],
+  'Shaviyani (Sh)': ['Funadhoo', 'Feydhoo', 'Milandhoo'],
+  'Noonu (N)': ['Manadhoo', 'Holhudhoo', 'Velidhoo'],
+  'Raa (R)': ['Ungoofaaru', 'Dhuvaafaru', 'Alifushi'],
+  'Baa (B)': ['Eydhafushi', 'Thulhaadhoo', 'Dharavandhoo'],
+  'Lhaviyani (Lh)': ['Naifaru', 'Hinnavaru'],
+  'Kaafu (K)': ["Male'", "Hulhumale'", 'Vilingili', 'Dhiffushi', 'Gaafaru', 'Gulhi', 'Guraidhoo', 'Hinmafushi', 'Huraa', 'Kaashidhoo', 'Maafushi', 'Thulusdhoo'],
+  'Alif Alif (AA)': ['Rasdhoo', 'Thoddoo', 'Ukulhas'],
+  'Alif Dhaalu (ADh)': ['Mahibadhoo', 'Dhigurah', 'Dhangethi'],
+  'Vaavu (V)': ['Felidhoo', 'Keyodhoo'],
+  'Meemu (M)': ['Muli', 'Naalaafushi', 'Dhiggaru'],
+  'Faafu (F)': ['Nilandhoo', 'Magoodhoo'],
+  'Dhaalu (Dh)': ['Kudahuvadhoo', 'Meedhoo'],
+  'Thaa (Th)': ['Veymandoo', 'Thimarafushi', 'Guraidhoo'],
+  'Laamu (L)': ['Fonadhoo', 'Gan', 'Maabaidhoo'],
+  'Gaafu Alif (GA)': ['Villingili', 'Maamendhoo'],
+  'Gaafu Dhaalu (GDh)': ['Thinadhoo', 'Madaveli'],
+  'Gnaviyani (Gn)': ['Fuvahmulah'],
+  'Seenu (Addu) (S)': ['Hithadhoo', 'Maradhoo', 'Feydhoo', 'Hulhudhoo'],
 };
 
 const GST_RATE = 0.08;
@@ -74,23 +74,35 @@ let coMethod = 'pickup';
 let coPickupDayIndex = 0;
 let coSlipFile = null;
 
+/* Cart and orders are namespaced per account (same scheme as script.js),
+   so they're only ever read/written for whoever is currently signed in. */
 function getSession(){
   try{ return JSON.parse(localStorage.getItem('mazi_session') || 'null'); }
   catch(e){ return null; }
 }
+function accountId(){
+  const session = getSession();
+  return session && session.email ? session.email.toLowerCase() : 'guest';
+}
+function cartKey(){
+  return 'mazi_cart_' + accountId();
+}
+function ordersKey(){
+  return 'mazi_orders_' + accountId();
+}
 function getCart(){
-  try{ return JSON.parse(localStorage.getItem('mazi_cart') || '{}'); }
+  try{ return JSON.parse(localStorage.getItem(cartKey()) || '{}'); }
   catch(e){ return {}; }
 }
 function saveCart(cart){
-  localStorage.setItem('mazi_cart', JSON.stringify(cart));
+  localStorage.setItem(cartKey(), JSON.stringify(cart));
 }
 function getOrders(){
-  try{ return JSON.parse(localStorage.getItem('mazi_orders') || '[]'); }
+  try{ return JSON.parse(localStorage.getItem(ordersKey()) || '[]'); }
   catch(e){ return []; }
 }
 function saveOrders(orders){
-  localStorage.setItem('mazi_orders', JSON.stringify(orders));
+  localStorage.setItem(ordersKey(), JSON.stringify(orders));
 }
 function productImg(p){
   return `img/products/${p.id}.png`;
@@ -112,6 +124,7 @@ function renderContact(){
   const name = [s.firstName, s.lastName].filter(Boolean).join(' ') || s.name || 'there';
   $('#coContactName').textContent = `Signed in as ${name}`;
   $('#coContactMobile').textContent = s.mobile ? `+960${String(s.mobile).replace(/^\+?960/,'')}` : '';
+  $('#coName').value = name !== 'there' ? name : '';
   $('#coMobile').value = s.mobile || '';
 }
 
@@ -305,7 +318,7 @@ function placeOrder(customer){
 
 function showSuccess(order, contactLabel){
   $('#coContent').style.display = 'none';
-  document.title = 'Order Placed — MAZI General Trading';
+  document.title = 'Order Placed — MAZI General Trade';
 
   const s = getSession() || {};
   const customer = order.customer || {};
@@ -319,8 +332,120 @@ function showSuccess(order, contactLabel){
   $('#coSuccessDate').textContent = d.toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'}) + ', ' + d.toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'});
   $('#coSuccessContact').textContent = contactLabel || '—';
 
+  initNotifPrompt();
+
   $('#coSuccess').classList.add('show');
   window.scrollTo({top:0, behavior:'smooth'});
+}
+
+/* ============ Device (OS-level) order notifications ============ */
+// Same mechanism as script.js on the main site — a real browser/OS
+// notification, backed by a service worker so it also works on Android
+// Chrome (which blocks the plain Notification constructor).
+function notifSupported(){
+  return typeof window !== 'undefined' && 'Notification' in window;
+}
+function registerNotifServiceWorker(){
+  if (!('serviceWorker' in navigator)) return Promise.resolve(null);
+  return navigator.serviceWorker.register('sw.js').catch(()=> null);
+}
+function requestDeviceNotifPermission(onDone){
+  if (!notifSupported()){ if (onDone) onDone('unsupported'); return; }
+  if (Notification.permission !== 'default'){ if (onDone) onDone(Notification.permission); return; }
+  registerNotifServiceWorker();
+  Notification.requestPermission().then(perm=>{ if (onDone) onDone(perm); });
+}
+
+// App-level on/off preference, shared (same localStorage key) with the
+// main site's script.js — so toggling it here or in Profile settings
+// stays in sync everywhere.
+function getNotifPref(){
+  return localStorage.getItem('mazi_notif_pref') || 'on';
+}
+function setNotifPref(val){
+  localStorage.setItem('mazi_notif_pref', val);
+}
+
+// Shown on the success screen. Stays visible (not hidden) once permission
+// is granted — it morphs into a persistent on/off toggle instead, so the
+// person can turn order + future offer/sale alerts back on or off right
+// there. Only hides fully when unsupported or the browser permission was
+// denied outright.
+function initNotifPrompt(){
+  const el = $('#coNotifPrompt');
+  const action = $('#coNotifAction');
+  if (!el || !action) return;
+
+  if (!notifSupported() || Notification.permission === 'denied'){
+    el.hidden = true;
+    return;
+  }
+  el.hidden = false;
+
+  if (Notification.permission === 'granted'){
+    renderNotifToggle(action, 'coNotifToggle');
+  } else {
+    renderNotifEnableButton(action, 'coNotifBtn', ()=> renderNotifToggle(action, 'coNotifToggle'), el);
+  }
+}
+
+// Renders the "Enable" button with the add-to-cart-style loading → success
+// animation. On success, calls onEnabled() to swap in the toggle.
+function renderNotifEnableButton(action, btnId, onEnabled, promptEl){
+  action.innerHTML = `
+    <button type="button" class="notif-prompt-btn" id="${btnId}">
+      <span class="notif-btn-label">Enable</span>
+      <span class="notif-btn-dots"><span></span><span></span><span></span></span>
+      <span class="notif-btn-success">
+        <span class="notif-btn-success-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        Enabled
+      </span>
+    </button>`;
+  const btn = document.getElementById(btnId);
+  if (!btn) return;
+  btn.addEventListener('click', ()=>{
+    if (btn.classList.contains('loading') || btn.classList.contains('success')) return;
+    btn.classList.add('loading');
+    requestDeviceNotifPermission((perm)=>{
+      setTimeout(()=>{
+        btn.classList.remove('loading');
+        if (perm === 'granted'){
+          setNotifPref('on');
+          btn.classList.add('success');
+          setTimeout(onEnabled, 900);
+        } else if (perm === 'denied'){
+          if (promptEl) promptEl.hidden = true;
+        }
+      }, 900);
+    });
+  });
+}
+
+// Renders the persistent on/off toggle shown once permission is granted.
+// Toggling plays the same shrink-to-circle loading animation as Add to Cart:
+// tap -> collapses into a small pulsing-dot circle -> expands back showing
+// the new On/Off state.
+function renderNotifToggle(action, toggleId){
+  const on = getNotifPref() !== 'off';
+  action.innerHTML = `
+    <div class="notif-inline-toggle-wrap" id="${toggleId}Wrap">
+      <span class="notif-toggle-caption" id="${toggleId}Caption">${on ? 'On' : 'Off'}</span>
+      <label class="pv-toggle-switch" aria-label="Order &amp; offer notifications">
+        <input type="checkbox" id="${toggleId}" ${on ? 'checked' : ''}>
+        <span class="pv-toggle-slider"></span>
+      </label>
+    </div>`;
+  const wrap = document.getElementById(`${toggleId}Wrap`);
+  const toggle = document.getElementById(toggleId);
+  if (!toggle) return;
+  toggle.addEventListener('change', ()=>{
+    const isOn = toggle.checked;
+    if (wrap) wrap.innerHTML = `<span class="notif-toggle-dots"><span></span><span></span><span></span></span>`;
+    setTimeout(()=>{
+      setNotifPref(isOn ? 'on' : 'off');
+      renderNotifToggle(action, toggleId);
+    }, 700);
+  });
 }
 
 /* ---------- Init ---------- */
@@ -338,7 +463,7 @@ function init(){
   renderPickupDays();
 
   populateAtollSelect('#coAtoll');
-  $('#coAtoll').value = 'K (Kaafu)';
+  $('#coAtoll').value = 'Kaafu (K)';
   populateIslandSelect('#coIsland', $('#coAtoll').value);
 
   setMethod('pickup');
@@ -367,6 +492,7 @@ function init(){
     }
   });
 
+  $('#coName').addEventListener('input', ()=> $('#coNameField').classList.remove('has-error'));
   $('#coMobile').addEventListener('input', ()=> $('#coMobileField').classList.remove('has-error'));
   $('#coHouse').addEventListener('input', ()=> $('#coHouseField').classList.remove('has-error'));
   [
@@ -376,11 +502,19 @@ function init(){
     $('#'+id).addEventListener('input', ()=> $('#'+id+'Field').classList.remove('has-error'));
   });
 
+  $('#coTerms').addEventListener('change', ()=>{
+    if ($('#coTerms').checked){
+      $('#coTermsField').classList.remove('has-error');
+      $('#coTermsError').style.display = 'none';
+    }
+  });
+
   $('#checkoutForm').addEventListener('submit', e=>{
     e.preventDefault();
 
-    const s = getSession() || {};
-    const name = [s.firstName, s.lastName].filter(Boolean).join(' ') || s.name || '';
+    const name = $('#coName').value.trim();
+    const nameOk = name.length >= 2;
+    $('#coNameField').classList.toggle('has-error', !nameOk);
     const mobile = $('#coMobile').value.trim();
     const mobileOk = /^[0-9+\-\s]{6,}$/.test(mobile);
     $('#coMobileField').classList.toggle('has-error', !mobileOk);
@@ -446,8 +580,12 @@ function init(){
     $('#coUploadWrap').classList.toggle('error', !slipOk);
     $('#coSlipError').style.display = slipOk ? 'none' : 'block';
 
-    if (!mobileOk || !methodOk || !slipOk){
-      const firstError = document.querySelector('.co-field.has-error, .co-upload.error');
+    const termsOk = $('#coTerms').checked;
+    $('#coTermsField').classList.toggle('has-error', !termsOk);
+    $('#coTermsError').style.display = termsOk ? 'none' : 'block';
+
+    if (!nameOk || !mobileOk || !methodOk || !slipOk || !termsOk){
+      const firstError = document.querySelector('.co-field.has-error, .co-upload.error, #coTermsField.has-error');
       if (firstError) firstError.scrollIntoView({behavior:'smooth', block:'center'});
       return;
     }
