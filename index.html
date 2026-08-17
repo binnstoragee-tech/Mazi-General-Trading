@@ -301,8 +301,12 @@
 <!-- ============ AUTH MODAL (Login / Register) ============ -->
 <div class="auth-backdrop" id="authBackdrop"></div>
 <div class="auth-modal" id="authModal">
-  <div class="auth-card">
-    <button class="auth-close" id="authClose" aria-label="Close">&times;</button>
+  <div class="auth-card-wrap">
+    <div class="auth-card">
+    <button class="auth-close" id="authClose" aria-label="Close">
+      <svg viewBox="0 0 24 24" width="16" height="16"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+    </button>
+    <div class="auth-card-scroll">
 
     <div class="auth-head">
       <img src="img/logo.png" alt="MAZI General Trade" class="auth-logo">
@@ -395,6 +399,8 @@
     <p class="auth-switch" id="authSwitchLine">
       Don't have an account? <button type="button" id="authSwitchBtn">Register</button>
     </p>
+  </div>
+  </div>
   </div>
 </div>
 
