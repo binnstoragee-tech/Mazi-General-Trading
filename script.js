@@ -54,6 +54,65 @@ const PRODUCTS = [
   { id:'MZ032', name:'Multi-Surface Cleaning Liquid 1L', cat:'household', icon:'🧽', pack:'Carton', unit:'12 x 1L', price:780, stock:'in' },
   { id:'MZ033', name:'Glue Stick 21g', cat:'household', icon:'🖇️', pack:'Box', unit:'20 pcs', price:140, stock:'low' },
   { id:'MZ034', name:'Dishwashing Liquid Lemon 900ml', cat:'household', icon:'🧴', pack:'Carton', unit:'12 x 900ml', price:850, stock:'in' },
+
+  /* --- Daiwa --- */
+  { id:'MZ035', name:'Daiwa Dishwashing Liquid Lemon 3.6L', cat:'household', icon:'🧴', pack:'Carton', unit:'4 x 3.6L', price:1350, stock:'in' },
+  { id:'MZ036', name:'Daiwa Dishwashing Liquid Concentrate & Hygiene 3.6L', cat:'household', icon:'🧴', pack:'Carton', unit:'4 x 3.6L', price:1450, stock:'in' },
+  { id:'MZ037', name:'Daiwa Dishwashing Liquid Mint 3.8L', cat:'household', icon:'🧴', pack:'Carton', unit:'12 x 3.8L', price:3200, stock:'in' },
+  { id:'MZ038', name:'Daiwa Laundry Liquid Detergent 3.5L', cat:'household', icon:'🧺', pack:'Carton', unit:'4 x 3.5L', price:1550, stock:'in' },
+  { id:'MZ039', name:'Daiwa Fabric Softener 3.5L', cat:'household', icon:'🧺', pack:'Carton', unit:'4 x 3.5L', price:1450, stock:'in' },
+  { id:'MZ040', name:'Daiwa Powder Detergent 5kg', cat:'household', icon:'📦', pack:'Carton', unit:'4 x 5kg', price:1680, stock:'in' },
+  { id:'MZ041', name:'Daiwa Liquid Hand Soap 3.5L', cat:'household', icon:'🧼', pack:'Carton', unit:'4 x 3.5L', price:1250, stock:'in' },
+  { id:'MZ042', name:'Daiwa Dust Collector Liquid 3.5L', cat:'household', icon:'🧽', pack:'Carton', unit:'4 x 3.5L', price:1350, stock:'in' },
+  { id:'MZ043', name:'Daiwa Glass Cleaner 3.5L', cat:'household', icon:'🪟', pack:'Carton', unit:'4 x 3.5L', price:1350, stock:'in' },
+  { id:'MZ044', name:'Daiwa Daily Gloss Liquid 3.5L', cat:'household', icon:'✨', pack:'Carton', unit:'4 x 3.5L', price:1350, stock:'in' },
+  { id:'MZ045', name:'Daiwa Turbo Toilet Cleaner 900ml - White', cat:'household', icon:'🚽', pack:'Carton', unit:'12 x 900ml', price:1450, stock:'in', img:'img/household&cleaning/Daiwa Turbo Toilet Cleaner 900 ml.-White.jpg' },
+  { id:'MZ074', name:'Daiwa Turbo Toilet Cleaner 900ml - Pink', cat:'household', icon:'🚽', pack:'Carton', unit:'12 x 900ml', price:1450, stock:'in', img:'img/household&cleaning/Daiwa Turbo Toilet Cleaner 900 ml.-Pink.jpg' },
+  { id:'MZ075', name:'Daiwa Turbo Toilet Cleaner 900ml - Purple', cat:'household', icon:'🚽', pack:'Carton', unit:'12 x 900ml', price:1450, stock:'in', img:'img/household&cleaning/Daiwa Turbo Toilet Cleaner 900 ml.-Purple.jpg' },
+  { id:'MZ046', name:'Daiwa Drain Unblocker 1L', cat:'household', icon:'🚰', pack:'Carton', unit:'12 x 1L', price:1780, stock:'in', img:'img/household&cleaning/Daiwa Drain Unblocker 1000 ml.jpg' },
+  { id:'MZ047', name:'Daiwa Disinfectant Deodorizer 3.5L', cat:'household', icon:'🧴', pack:'Carton', unit:'4 x 3.5L', price:1350, stock:'in' },
+  { id:'MZ048', name:'Daiwa Floor Cleaner 3.8L (Floral Mist/Lemon/Aqua Blue/Lavender)', cat:'household', icon:'🧹', pack:'Carton', unit:'4 x 3.8L', price:1550, stock:'in' },
+  { id:'MZ073', name:'Daiwa Floor Polishing Wax 1L', cat:'household', icon:'✨', pack:'Carton', unit:'12 x 1L', price:850, stock:'in', img:'img/household&cleaning/Daiwa Floor Polishing Wax 1000 ml.jpg' },
+  { id:'MZ049', name:'Daiwa Floor Polishing Wax 3.5L', cat:'household', icon:'✨', pack:'Carton', unit:'4 x 3.5L', price:1550, stock:'in', img:'img/household&cleaning/Daiwa Floor Polishing Wax 3500 ml.jpg' },
+  { id:'MZ050', name:'Daiwa Hygiene Multi-Use Disinfectant 3.5L', cat:'household', icon:'🧴', pack:'Carton', unit:'4 x 3.5L', price:1450, stock:'in' },
+
+  /* --- Sanzoft --- */
+  { id:'MZ051', name:'Sanzoft Laundry Liquid Detergent 5L - Pink Rose Scent', cat:'household', icon:'🧺', pack:'Carton', unit:'4 x 5L', price:1980, stock:'in', img:'img/household&cleaning/Sanzoft Laundry Liquid Detergent 5000 ml.-Pink Rose Scent.jpg' },
+  { id:'MZ081', name:'Sanzoft Laundry Liquid Detergent 5L - Violet Scent', cat:'household', icon:'🧺', pack:'Carton', unit:'4 x 5L', price:1980, stock:'in', img:'img/household&cleaning/Sanzoft Laundry Liquid Detergent 5000 ml.-Violet Scent.jpg' },
+  { id:'MZ052', name:'Sanzoft Liquid Detergent 5L (Mystical Perfume)', cat:'household', icon:'🧺', pack:'Carton', unit:'4 x 5L', price:1980, stock:'in' },
+  { id:'MZ053', name:'Sanzoft Fabric Softener 3.8L - Sunny Sweet', cat:'household', icon:'🧺', pack:'Carton', unit:'4 x 3.8L', price:1450, stock:'in' },
+  { id:'MZ078', name:'Sanzoft Fabric Softener 3.8L - Lovely Pink', cat:'household', icon:'🧺', pack:'Carton', unit:'4 x 3.8L', price:1450, stock:'in', img:'img/household&cleaning/Sanzoft Fabric Softener 3800 ml. -Lovely Pink.jpg' },
+  { id:'MZ079', name:'Sanzoft Fabric Softener 3.8L - Sense of Violet', cat:'household', icon:'🧺', pack:'Carton', unit:'4 x 3.8L', price:1450, stock:'in', img:'img/household&cleaning/Sanzoft Fabric Softener 3800 ml. -Sense of Violet.jpg' },
+  { id:'MZ080', name:'Sanzoft Fabric Softener 3.8L - Softly Touch', cat:'household', icon:'🧺', pack:'Carton', unit:'4 x 3.8L', price:1450, stock:'in', img:'img/household&cleaning/Sanzoft Fabric Softener 3800 ml. -Softly Touch.jpg' },
+  { id:'MZ054', name:'Sanzoft Fabric Sensation Spray 270ml (Lavish Pink/Elegant Violet/Deep Blue Cotton)', cat:'household', icon:'🌸', pack:'Carton', unit:'12 x 270ml', price:1080, stock:'in' },
+
+  /* --- Pinto --- */
+  { id:'MZ055', name:'Pinto Click Dishwashing Liquid 750ml (Lemon/Kiwi/Pomelo/Passion Fruit)', cat:'household', icon:'🧴', pack:'Carton', unit:'12 x 750ml', price:980, stock:'in' },
+  { id:'MZ056', name:'Pinto Click Dishwashing Liquid Pure & Care 750ml', cat:'household', icon:'🧴', pack:'Carton', unit:'12 x 750ml', price:980, stock:'in' },
+
+  /* --- R-Fresh --- */
+  { id:'MZ057', name:'R-Fresh Air Freshener Gel 180g - Jasmine', cat:'household', icon:'🌸', pack:'Carton', unit:'24 x 180g', price:1180, stock:'in', img:'img/household&cleaning/R-Fresh Air Freshener Gel 180 gram.- Jasmine.jpg' },
+  { id:'MZ069', name:'R-Fresh Air Freshener Gel 180g - Lavender', cat:'household', icon:'🌸', pack:'Carton', unit:'24 x 180g', price:1180, stock:'in', img:'img/household&cleaning/R-Fresh Air Freshener Gel 180 gram.-Lavender.jpg' },
+  { id:'MZ070', name:'R-Fresh Air Freshener Gel 180g - Orange', cat:'household', icon:'🌸', pack:'Carton', unit:'24 x 180g', price:1180, stock:'in' },
+  { id:'MZ071', name:'R-Fresh Air Freshener Gel 180g - Lemon', cat:'household', icon:'🌸', pack:'Carton', unit:'24 x 180g', price:1180, stock:'in', img:'img/household&cleaning/R-Fresh Air Freshener Gel 180 gram.- Lemon.jpg' },
+  { id:'MZ072', name:'R-Fresh Air Freshener Gel 180g - Lily', cat:'household', icon:'🌸', pack:'Carton', unit:'24 x 180g', price:1180, stock:'in', img:'img/household&cleaning/R-Fresh Air Freshener Gel 180 gram.-Lily.jpg' },
+
+  /* --- Carefor --- */
+  { id:'MZ058', name:'Carefor Air Freshener Gel 180g - Rose', cat:'household', icon:'🌸', pack:'Carton', unit:'24 x 180g', price:1180, stock:'in', img:'img/household&cleaning/Carefor Air Freshener Gel 180 gram.- Rose.jpg' },
+  { id:'MZ076', name:'Carefor Air Freshener Gel 180g - Lemon Grass', cat:'household', icon:'🌸', pack:'Carton', unit:'24 x 180g', price:1180, stock:'in', img:'img/household&cleaning/Carefor Air Freshener Gel 180 gram.- Lemon Grass.jpg' },
+  { id:'MZ077', name:'Carefor Air Freshener Gel 180g - Coffee', cat:'household', icon:'🌸', pack:'Carton', unit:'24 x 180g', price:1180, stock:'in', img:'img/household&cleaning/Carefor Air Freshener Gel 180 gram.- Coffee.jpg' },
+
+  /* --- Ninja (car care) --- */
+  { id:'MZ059', name:'Ninja Car Wash Clean & Clear 1L', cat:'household', icon:'🚗', pack:'Carton', unit:'12 x 1L', price:1450, stock:'in' },
+  { id:'MZ060', name:'Ninja Concentrated Car Wash 1L', cat:'household', icon:'🚗', pack:'Carton', unit:'12 x 1L', price:1650, stock:'in' },
+  { id:'MZ061', name:'Ninja Leather Restorer Shine & Protect 400ml', cat:'household', icon:'🛋️', pack:'Carton', unit:'12 x 400ml', price:1180, stock:'in' },
+  { id:'MZ062', name:'Ninja Quick Wax Shine & Protect 400ml', cat:'household', icon:'✨', pack:'Carton', unit:'12 x 400ml', price:1180, stock:'in' },
+  { id:'MZ063', name:'Ninja Paste Wax 150g', cat:'household', icon:'🪞', pack:'Carton', unit:'24 x 150g', price:1450, stock:'in' },
+  { id:'MZ064', name:'Ninja Ultra Gloss Spray Wax 400ml', cat:'household', icon:'✨', pack:'Carton', unit:'12 x 400ml', price:1180, stock:'in' },
+  { id:'MZ065', name:'Ninja Tire Shine 400ml', cat:'household', icon:'🛞', pack:'Carton', unit:'12 x 400ml', price:1080, stock:'in' },
+  { id:'MZ066', name:'Ninja Black Tires Shine & Protect Spray 510ml', cat:'household', icon:'🛞', pack:'Carton', unit:'12 x 510ml', price:1180, stock:'in' },
+  { id:'MZ067', name:'Ninja Automotive Multi Purpose Spray 200ml', cat:'household', icon:'🔧', pack:'Carton', unit:'24 x 200ml', price:1580, stock:'in' },
+  { id:'MZ068', name:'Ninja Anti Rat Spray 250ml', cat:'household', icon:'🐭', pack:'Carton', unit:'24 x 250ml', price:1980, stock:'in' },
 ];
 
 /* ---------- Hero slides ---------- */
@@ -147,16 +206,45 @@ function saveRecentSearches(){
 function getRegisteredAccounts(){
   return JSON.parse(localStorage.getItem('mazi_accounts') || '[]');
 }
-function saveRegisteredAccount(mobile, email){
+function saveRegisteredAccount(mobile){
   const accounts = getRegisteredAccounts();
-  accounts.push({ mobile, email: email.toLowerCase() });
+  accounts.push({ mobile });
   localStorage.setItem('mazi_accounts', JSON.stringify(accounts));
 }
 function clearRegisterErrors(){
   $('#regMobileField').classList.remove('has-error');
   $('#regMobileError').hidden = true;
-  $('#regEmailField').classList.remove('has-error');
-  $('#regEmailError').hidden = true;
+}
+
+/* ============ Register OTP verification (demo — no real SMS sent) ============ */
+let pendingRegistration = null; // { firstName, lastName, mobile }
+let currentOtpCode = null;
+function generateOtpCode(){
+  return String(Math.floor(100000 + Math.random() * 900000));
+}
+function maskMobile(mobile){
+  if (mobile.length <= 4) return mobile;
+  return mobile.slice(0, 2) + '•'.repeat(Math.max(0, mobile.length - 4)) + mobile.slice(-2);
+}
+function showOtpStep(){
+  currentOtpCode = generateOtpCode();
+  $('#registerForm').hidden = true;
+  $('#otpForm').hidden = false;
+  $('#authTabs').hidden = true;
+  $('#authTerms').hidden = true;
+  $('#otpMobileLabel').textContent = maskMobile(pendingRegistration.mobile);
+  $('#otpDemoHint').textContent = `Demo mode — no SMS is actually sent. Your code is: ${currentOtpCode}`;
+  $('#otpInput').value = '';
+  $('#otpField').classList.remove('has-error');
+  $('#otpError').hidden = true;
+}
+function backToRegisterForm(){
+  $('#otpForm').hidden = true;
+  $('#registerForm').hidden = false;
+  $('#authTabs').hidden = false;
+  $('#authTerms').hidden = false;
+  pendingRegistration = null;
+  currentOtpCode = null;
 }
 
 function cartCount(){
@@ -188,6 +276,16 @@ function showToast(msg, sub){
 }
 
 /* ============ Sidebar / category strip / pills ============ */
+// Switching category always clears any active search — otherwise the
+// heading/results stay stuck on "Results for ..." (and filtered by the old
+// keyword) instead of reflecting the category the person just tapped.
+function setCategory(catId){
+  state.category = catId;
+  state.query = '';
+  $('#searchInput').value = '';
+  $('#mobileSearchInput').value = '';
+}
+
 function renderCategoryNav(){
   // Sidebar (desktop) — highlight pill is rebuilt as the first list item each render
   const sidebarItems = [
@@ -201,7 +299,7 @@ function renderCategoryNav(){
 
   $$('[data-cat]').forEach(btn=>{
     btn.addEventListener('click', ()=>{
-      state.category = btn.dataset.cat;
+      setCategory(btn.dataset.cat);
       $$('[data-cat]').forEach(b=> b.classList.toggle('active', b.dataset.cat === state.category));
       renderProducts();
       closeMenu();
@@ -334,11 +432,16 @@ function startHeroAuto(){
 
 /* ============ Product grid ============ */
 function getFilteredProducts(){
-  return PRODUCTS.filter(p=>{
+  const filtered = PRODUCTS.filter(p=>{
     const matchCat = state.category==='all' || p.cat===state.category;
     const matchQuery = !state.query || p.name.toLowerCase().includes(state.query) || p.id.toLowerCase().includes(state.query);
     return matchCat && matchQuery;
   });
+  // Products with a real uploaded photo (p.img set) go first; the rest
+  // (falling back to the default img/products/ID.png convention, which may
+  // still be a placeholder) come after. Sort is stable, so order within
+  // each group is unchanged.
+  return filtered.slice().sort((a, b) => (a.img ? 0 : 1) - (b.img ? 0 : 1));
 }
 
 function stockMeta(p){
@@ -483,8 +586,11 @@ function bindProductCardClicks(container){
 }
 
 function productImg(p){
-  // Placeholder path convention — drop matching files in img/products/
-  // (e.g. img/products/MZ001.png) and they'll show automatically.
+  // Some products (e.g. specific brand scents/variants) ship with a real
+  // photo already placed at a custom path — use that if set on the product.
+  if (p.img) return p.img;
+  // Default placeholder path convention — drop matching files in
+  // img/products/ (e.g. img/products/MZ001.png) and they'll show automatically.
   // Falls back to the emoji if the file isn't there yet.
   return `img/products/${p.id}.png`;
 }
@@ -741,8 +847,27 @@ function getSession(){
   try{ return JSON.parse(localStorage.getItem('mazi_session') || 'null'); }
   catch{ return null; }
 }
+// Whatever a shopper added to the cart before logging in lives under the
+// "guest" bucket. On login/register we fold those items into the account's
+// own cart (adding quantities if the same product is in both) so nothing
+// picked before signing in gets left behind.
+function mergeGuestCartIntoAccount(){
+  const GUEST_KEY = 'mazi_cart_guest';
+  try{
+    const guestCart = JSON.parse(localStorage.getItem(GUEST_KEY) || '{}');
+    const guestIds = Object.keys(guestCart);
+    if (guestIds.length === 0) return;
+    const accountCart = JSON.parse(localStorage.getItem(cartKey()) || '{}');
+    guestIds.forEach(id=>{
+      accountCart[id] = (accountCart[id] || 0) + guestCart[id];
+    });
+    localStorage.setItem(cartKey(), JSON.stringify(accountCart));
+    localStorage.removeItem(GUEST_KEY);
+  } catch(e){}
+}
 function setSession(data){
   localStorage.setItem('mazi_session', JSON.stringify(data));
+  mergeGuestCartIntoAccount();
   state.recentSearches = loadRecentSearches();
   state.cart = loadCart();
   updateCartUI();
@@ -820,9 +945,17 @@ function withAuthLoading(action, delay = 900){
 
 /* ============ Generic confirm modal ============ */
 let _confirmAction = null;
-function openConfirmModal({ title, sub, confirmLabel = 'Confirm', onConfirm }){
+function openConfirmModal({ title, sub, note, confirmLabel = 'Confirm', onConfirm }){
   $('#logoutConfirmModal').querySelector('.confirm-title').textContent = title;
   $('#logoutConfirmModal').querySelector('.confirm-sub').textContent = sub;
+  const noteEl = $('#confirmNote');
+  if (note){
+    noteEl.textContent = note;
+    noteEl.hidden = false;
+  } else {
+    noteEl.textContent = '';
+    noteEl.hidden = true;
+  }
   $('#logoutConfirmBtn').textContent = confirmLabel;
   _confirmAction = onConfirm;
   $('#logoutConfirmBackdrop').classList.add('show');
@@ -1262,6 +1395,7 @@ function openCancelOrderConfirm(orderId){
   openConfirmModal({
     title: 'Cancel this order?',
     sub: "This order hasn't been approved yet. Once cancelled, this can't be undone.",
+    note: "If you've already sent payment via bank transfer or QR code, it won't be refunded instantly — refunds are processed manually by our team and may take a few business days.",
     confirmLabel: 'Cancel Order',
     onConfirm: ()=> withAuthLoading(()=> cancelOrder(orderId), 700),
   });
@@ -1270,6 +1404,9 @@ function openCancelOrderConfirm(orderId){
 function formatOrderDate(ts){
   return new Date(ts).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
 }
+
+let ordersVisibleCount = 10;
+const ORDERS_PAGE_SIZE = 10;
 
 function renderOrdersView(){
   markOrdersSeen();
@@ -1295,10 +1432,10 @@ function renderOrdersView(){
     return;
   }
 
-  const orders = getOrders();
-  $('#ordersCount').textContent = orders.length ? `${orders.length} order${orders.length!==1?'s':''}` : '';
+  const allOrders = getOrders();
+  $('#ordersCount').textContent = allOrders.length ? `${allOrders.length} order${allOrders.length!==1?'s':''}` : '';
 
-  if (orders.length === 0){
+  if (allOrders.length === 0){
     $('#ordersCardBody').innerHTML = `
       <div class="orders-empty">
         <div class="orders-empty-icon">
@@ -1318,7 +1455,7 @@ function renderOrdersView(){
   const ORDER_VISIBLE_ITEMS = 3;
   const orderRenderItemRow = (it) => `
     <div class="order-item-row">
-      <div class="order-item-media"><img src="img/products/${it.id}.png" alt="${it.name}" onerror="this.classList.add('img-missing')"></div>
+      <div class="order-item-media"><img src="${productImg(PRODUCTS.find(p=>p.id===it.id) || it)}" alt="${it.name}" onerror="this.classList.add('img-missing')"></div>
       <div class="order-item-info">
         <div class="order-item-name">${it.name}</div>
         <div class="order-item-meta">${it.pack} · Qty ${it.qty}</div>
@@ -1326,6 +1463,9 @@ function renderOrdersView(){
       <div class="order-item-price">${fmt(it.price*it.qty)}</div>
     </div>
   `;
+
+  const orders = allOrders.slice(0, ordersVisibleCount);
+  const remaining = allOrders.length - orders.length;
 
   $('#ordersCardBody').innerHTML = `
     <div class="orders-list">
@@ -1379,7 +1519,16 @@ function renderOrdersView(){
       `;
       }).join('')}
     </div>
+    ${remaining > 0 ? `
+      <button type="button" class="orders-load-more-btn" id="ordersLoadMoreBtn">
+        Load ${Math.min(remaining, ORDERS_PAGE_SIZE)} more order${Math.min(remaining, ORDERS_PAGE_SIZE)!==1?'s':''}
+      </button>
+    ` : ''}
   `;
+  $('#ordersLoadMoreBtn')?.addEventListener('click', ()=>{
+    ordersVisibleCount += ORDERS_PAGE_SIZE;
+    renderOrdersView();
+  });
   $$('[data-order-toggle]').forEach(btn=>{
     btn.addEventListener('click', ()=> toggleOrderItems(btn.dataset.orderToggle));
   });
@@ -1403,6 +1552,7 @@ function toggleOrderItems(orderId){
 }
 
 function openOrdersView(){
+  ordersVisibleCount = ORDERS_PAGE_SIZE;
   renderOrdersView();
   closeOtherFullScreenViews('ordersView');
   $('#ordersView').classList.add('open');
@@ -1414,6 +1564,7 @@ function closeOrdersView(){
   $('#ordersView').classList.remove('open');
   document.body.style.overflow = '';
   clearInterval(openOrdersView._timer);
+  returnToCheckoutIfNeeded();
 }
 
 /* ============ Order Confirmation (shown right after checkout, before admin processes) ============ */
@@ -1429,7 +1580,7 @@ function openOrderConfirmModal(order){
   const ocRenderItemRow = (it, idx) => `
     ${idx>0 ? '<div class="oc-item-divider"></div>' : ''}
     <div class="oc-item-row">
-      <div class="oc-item-media"><img src="img/products/${it.id}.png" alt="${it.name}" onerror="this.classList.add('img-missing')"></div>
+      <div class="oc-item-media"><img src="${productImg(PRODUCTS.find(p=>p.id===it.id) || it)}" alt="${it.name}" onerror="this.classList.add('img-missing')"></div>
       <div class="oc-item-info">
         <div class="oc-item-name">${it.name}</div>
         <div class="oc-item-meta">${it.pack} &middot; Qty ${it.qty}</div>
@@ -1658,6 +1809,7 @@ function openProfileView(){
 function closeProfileView(){
   $('#profileView').classList.remove('open');
   document.body.style.overflow = '';
+  returnToCheckoutIfNeeded();
 }
 function saveProfileView(){
   const newPass = $('#pvNewPassword').value;
@@ -1765,7 +1917,13 @@ function closeOnboarding(){
 
 function setAuthTab(tab){
   const isLogin = tab === 'login';
+  const authScrollEl = document.querySelector('.auth-card-scroll');
+  const authStartHeight = authScrollEl ? authScrollEl.offsetHeight : null;
   clearRegisterErrors();
+  pendingRegistration = null;
+  currentOtpCode = null;
+  $('#otpForm').hidden = true;
+  $('#authTabs').hidden = false;
   $$('.auth-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
   $('#authTabHighlight').classList.toggle('to-register', !isLogin);
   $('#loginForm').hidden = !isLogin;
@@ -1780,6 +1938,32 @@ function setAuthTab(tab){
   $('#authSwitchBtn').addEventListener('click', ()=> setAuthTab(isLogin ? 'register' : 'login'));
   $('.auth-card').classList.toggle('auth-card-login', isLogin);
   $('.auth-card').classList.toggle('auth-card-register', !isLogin);
+
+  // Smooth height morph between Login <-> Register. Register stacks its fields
+  // vertically on mobile (much taller than Login), which used to cause an
+  // abrupt jump — this animates the card to its new height instead.
+  if (authScrollEl && authStartHeight !== null) animateAuthCardHeight(authScrollEl, authStartHeight);
+}
+
+function animateAuthCardHeight(scrollEl, startHeight){
+  scrollEl.style.transition = 'none';
+  scrollEl.style.overflow = 'hidden';
+  scrollEl.style.height = startHeight + 'px';
+  // eslint-disable-next-line no-unused-expressions
+  void scrollEl.offsetHeight; // force reflow so the browser registers the start height
+  const endHeight = scrollEl.scrollHeight;
+  scrollEl.style.transition = 'height .38s var(--ease-glass)';
+  scrollEl.style.height = endHeight + 'px';
+
+  const cleanup = () => {
+    scrollEl.style.height = '';
+    scrollEl.style.overflow = '';
+    scrollEl.style.transition = '';
+    scrollEl.removeEventListener('transitionend', cleanup);
+  };
+  scrollEl.addEventListener('transitionend', cleanup);
+  // Safety fallback in case transitionend doesn't fire (e.g. height didn't change)
+  setTimeout(cleanup, 450);
 }
 
 /* ============ Search ============ */
@@ -1868,23 +2052,27 @@ function renderMobileSearchBody(rawValue){
   body.innerHTML = `
     <div class="ms-section-head">
       <span>Recent Searches</span>
-      <button class="ms-clear-all" id="msClearAll">Clear All</button>
+      <button class="ms-clear-all" id="msClearAll">Clear all</button>
     </div>
-    ${state.recentSearches.map(term => `
-      <div class="ms-recent-row">
-        <svg class="ms-row-icon" viewBox="0 0 24 24"><path d="M12 8v5l3 2M12 3a9 9 0 100 18 9 9 0 000-18z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        <button class="ms-row-text" data-recent="${term.replace(/"/g,'&quot;')}" style="text-align:left;">${term}</button>
-        <button class="ms-row-remove" data-remove-recent="${term.replace(/"/g,'&quot;')}" aria-label="Remove">&times;</button>
-      </div>
-    `).join('')}
+    <div class="ms-recent-tags">
+      ${state.recentSearches.map(term => `
+        <button class="ms-recent-tag" data-recent="${term.replace(/"/g,'&quot;')}">
+          <span>${term}</span>
+          <span class="ms-recent-tag-remove" data-remove-recent="${term.replace(/"/g,'&quot;')}" aria-label="Remove">&times;</span>
+        </button>
+      `).join('')}
+    </div>
   `;
 
   $('#msClearAll')?.addEventListener('click', clearAllRecentSearches);
   $$('[data-recent]').forEach(btn=>{
-    btn.addEventListener('click', ()=> commitMobileSearch(btn.dataset.recent));
+    btn.addEventListener('click', (e)=>{
+      if (e.target.closest('[data-remove-recent]')) return;
+      commitMobileSearch(btn.dataset.recent);
+    });
   });
-  $$('[data-remove-recent]').forEach(btn=>{
-    btn.addEventListener('click', (e)=>{ e.stopPropagation(); removeRecentSearch(btn.dataset.removeRecent); });
+  $$('[data-remove-recent]').forEach(el=>{
+    el.addEventListener('click', (e)=>{ e.stopPropagation(); removeRecentSearch(el.dataset.removeRecent); });
   });
 }
 
@@ -2101,7 +2289,7 @@ function init(){
   $$('[data-footer-cat]').forEach(link=>{
     link.addEventListener('click', (e)=>{
       e.preventDefault();
-      state.category = link.dataset.footerCat;
+      setCategory(link.dataset.footerCat);
       renderCategoryNav();
       renderProducts();
       window.scrollTo({top:0, behavior:'smooth'});
@@ -2177,35 +2365,54 @@ function init(){
     const firstName = $('#registerForm input[placeholder="Juan"]').value.trim();
     const lastName = $('#registerForm input[placeholder="Dela Cruz"]').value.trim();
     const mobileInput = $('#registerForm input[type="tel"]');
-    const emailInput = $('#registerForm input[type="email"]');
     const mobile = mobileInput.value.trim();
-    const email = emailInput.value.trim();
 
     const accounts = getRegisteredAccounts();
     const mobileTaken = !!mobile && accounts.some(a => a.mobile === mobile);
-    const emailTaken = !!email && accounts.some(a => a.email === email.toLowerCase());
 
     $('#regMobileField').classList.toggle('has-error', mobileTaken);
     $('#regMobileError').hidden = !mobileTaken;
-    $('#regEmailField').classList.toggle('has-error', emailTaken);
-    $('#regEmailError').hidden = !emailTaken;
 
-    if (mobileTaken || emailTaken) return;
+    if (mobileTaken) return;
 
-    saveRegisteredAccount(mobile, email);
+    pendingRegistration = { firstName, lastName, mobile };
+    showOtpStep();
+  });
+  $('#otpForm').addEventListener('submit', e=>{
+    e.preventDefault();
+    if (!pendingRegistration) return;
+    const entered = $('#otpInput').value.trim();
+    if (entered !== currentOtpCode){
+      $('#otpField').classList.add('has-error');
+      $('#otpError').hidden = false;
+      return;
+    }
+    const { firstName, lastName, mobile } = pendingRegistration;
+    saveRegisteredAccount(mobile);
+    pendingRegistration = null;
+    currentOtpCode = null;
     closeLogin();
     withAuthLoading(()=>{
-      setSession({ name: firstName || 'Account', firstName: firstName || 'Account', lastName, email, mobile });
+      setSession({ name: firstName || 'Account', firstName: firstName || 'Account', lastName, email: '', mobile });
       openOnboarding(firstName);
     });
   });
+  $('#otpInput').addEventListener('input', ()=>{
+    $('#otpField').classList.remove('has-error');
+    $('#otpError').hidden = true;
+  });
+  $('#otpResendBtn').addEventListener('click', ()=>{
+    if (!pendingRegistration) return;
+    currentOtpCode = generateOtpCode();
+    $('#otpDemoHint').textContent = `Demo mode — no SMS is actually sent. Your code is: ${currentOtpCode}`;
+    $('#otpInput').value = '';
+    $('#otpField').classList.remove('has-error');
+    $('#otpError').hidden = true;
+  });
+  $('#otpBackBtn').addEventListener('click', backToRegisterForm);
   $('#registerForm input[type="tel"]').addEventListener('input', ()=>{
     $('#regMobileField').classList.remove('has-error');
     $('#regMobileError').hidden = true;
-  });
-  $('#registerForm input[type="email"]').addEventListener('input', ()=>{
-    $('#regEmailField').classList.remove('has-error');
-    $('#regEmailError').hidden = true;
   });
 
   $('#obAccountType').addEventListener('change', toggleBusinessFields);
@@ -2232,12 +2439,13 @@ function init(){
   $('#mobileSearchClose').addEventListener('click', closeMobileSearch);
   $('#mobileSearchBackdrop').addEventListener('click', closeMobileSearch);
   $('#mobileSearchInput').addEventListener('input', e=>{
-    renderMobileSearchBody(e.target.value);
-    if (!e.target.value.trim()){
-      // Box is empty again — clear the active filter so the grid returns to normal.
-      $('#searchInput').value = '';
-      handleSearch('');
-    }
+    const value = e.target.value;
+    renderMobileSearchBody(value);
+    // Mirror the desktop search bar: filter the product grid live (with the
+    // same loading-skeleton debounce) as the person types, instead of only
+    // updating once they hit Enter or tap a suggestion.
+    $('#searchInput').value = value;
+    handleSearch(value);
   });
   $('#mobileSearchInput').addEventListener('keydown', e=>{
     if (e.key === 'Enter') commitMobileSearch(e.target.value);
@@ -2270,9 +2478,14 @@ function handleOpenParam(){
   const params = new URLSearchParams(window.location.search);
   const open = params.get('open');
   const cat = params.get('cat');
+  const from = params.get('from');
+
+  if (from === 'checkout'){
+    sessionStorage.setItem('mazi_return_to_checkout', '1');
+  }
 
   if (cat){
-    state.category = cat;
+    setCategory(cat);
     renderCategoryNav();
     renderProducts();
     window.scrollTo({top:0, behavior:'smooth'});
@@ -2311,8 +2524,13 @@ function handleOpenParam(){
     showToast('No offers saved yet');
   } else if (open === 'profile'){
     if (getSession()){
-      if (isMobile) openProfileMenu();
-      else toggleProfileDropdown($('#profileDropdown'));
+      if (from === 'checkout'){
+        openProfileView();
+      } else if (isMobile){
+        openProfileMenu();
+      } else {
+        toggleProfileDropdown($('#profileDropdown'));
+      }
     } else {
       openLogin();
     }
@@ -2321,6 +2539,18 @@ function handleOpenParam(){
   }
 
   history.replaceState(null, '', window.location.pathname + window.location.hash);
+}
+
+/* If the account/profile flow was entered from the checkout page (via the
+   checkout header's profile icon), closing it should return the person to
+   checkout instead of stranding them on the homepage. */
+function returnToCheckoutIfNeeded(){
+  if (sessionStorage.getItem('mazi_return_to_checkout')){
+    sessionStorage.removeItem('mazi_return_to_checkout');
+    window.location.href = 'checkout.html';
+    return true;
+  }
+  return false;
 }
 
 document.addEventListener('DOMContentLoaded', init);

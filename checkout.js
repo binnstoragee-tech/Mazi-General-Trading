@@ -6,42 +6,100 @@
 
 /* ---------- Product data (kept in sync with script.js) ---------- */
 const PRODUCTS = [
-  { id:'MZ001', name:'Coast Full Cream Milk Powder 400g', cat:'dairy', pack:'Carton', unit:'24 x 400g', price:1180, stock:'out' },
-  { id:'MZ002', name:'Dutch Farm UHT Milk 1L', cat:'dairy', pack:'Carton', unit:'12 x 1L', price:640, stock:'in' },
-  { id:'MZ003', name:'Golden Churn Butter 200g', cat:'dairy', pack:'Box', unit:'24 x 200g', price:1450, stock:'in' },
-  { id:'MZ004', name:'Cimory Yogurt Drink Strawberry 125ml', cat:'dairy', pack:'Carton', unit:'40 x 125ml', price:160, stock:'low' },
-  { id:'MZ005', name:'Ceylon Breakfast Tea 100 Bags', cat:'tea', pack:'Box', unit:'12 x 100bags', price:920, stock:'in' },
-  { id:'MZ006', name:'Green Tea Classic 25 Bags', cat:'tea', pack:'Box', unit:'24 x 25bags', price:540, stock:'in' },
-  { id:'MZ007', name:'Nescafe Classic Instant Coffee 200g', cat:'coffee', pack:'Carton', unit:'12 x 200g', price:1980, stock:'low' },
-  { id:'MZ008', name:'3-in-1 Instant Coffee Mix 20g', cat:'coffee', pack:'Box', unit:'30 x 20g', price:310, stock:'in' },
-  { id:'MZ009', name:'Sparkling Orange Soda 330ml', cat:'beverages', pack:'Carton', unit:'24 x 330ml', price:480, stock:'in' },
-  { id:'MZ010', name:'Tropical Fruit Juice 1L', cat:'beverages', pack:'Carton', unit:'12 x 1L', price:660, stock:'in' },
-  { id:'MZ011', name:'Mineral Water 500ml', cat:'beverages', pack:'Carton', unit:'24 x 500ml', price:220, stock:'in' },
-  { id:'MZ012', name:'Premium Medjool Dates 500g', cat:'dried-fruits', pack:'Box', unit:'10 x 500g', price:2100, stock:'low' },
-  { id:'MZ013', name:'Mixed Dried Fruits 250g', cat:'dried-fruits', pack:'Box', unit:'20 x 250g', price:1350, stock:'in' },
-  { id:'MZ014', name:'Basmati Rice 5kg', cat:'grains', pack:'Bag', unit:'1 x 5kg', price:340, stock:'in' },
-  { id:'MZ015', name:'Rolled Oats 500g', cat:'grains', pack:'Carton', unit:'12 x 500g', price:980, stock:'in' },
-  { id:'MZ016', name:'Peanut Butter Crunchy 340g', cat:'grains', pack:'Carton', unit:'12 x 340g', price:1120, stock:'low' },
-  { id:'MZ017', name:'Overload Chocolate Bar 40g', cat:'confectionary', pack:'Carton', unit:'24 x 40g', price:790, stock:'low' },
-  { id:'MZ018', name:'Butter Cream Crackers 300g', cat:'confectionary', pack:'Carton', unit:'12 x 300g', price:860, stock:'in' },
-  { id:'MZ019', name:'Assorted Gummy Candy 100g', cat:'confectionary', pack:'Box', unit:'30 x 100g', price:610, stock:'in' },
-  { id:'MZ020', name:'Chicken Chunk in Sunflower Oil 185g', cat:'canned', pack:'Carton', unit:'24 x 185g', price:1750, stock:'in' },
-  { id:'MZ021', name:'Tropical Fruit Cocktail 420g', cat:'canned', pack:'Carton', unit:'24 x 420g', price:850, stock:'low' },
-  { id:'MZ022', name:'Corned Beef 340g', cat:'canned', pack:'Carton', unit:'24 x 340g', price:1980, stock:'in' },
-  { id:'MZ023', name:'All-Purpose Baking Flour 1kg', cat:'cooking', pack:'Bag', unit:'1 x 1kg', price:75, stock:'in' },
-  { id:'MZ024', name:'Fine Granulated Sugar 1kg', cat:'cooking', pack:'Bag', unit:'1 x 1kg', price:60, stock:'in' },
-  { id:'MZ025', name:'Baking Powder 100g', cat:'cooking', pack:'Box', unit:'24 x 100g', price:540, stock:'in' },
-  { id:'MZ026', name:'Strawberry Body Wash 400ml', cat:'personal-care', pack:'Carton', unit:'12 x 400ml', price:960, stock:'in' },
-  { id:'MZ027', name:'Refreshing Hand Sanitizer 250ml', cat:'personal-care', pack:'Carton', unit:'24 x 250ml', price:1080, stock:'in' },
-  { id:'MZ028', name:'Herbal Shampoo 350ml', cat:'personal-care', pack:'Carton', unit:'12 x 350ml', price:890, stock:'low' },
-  { id:'MZ029', name:'White Vinegar 750ml', cat:'sauces', pack:'Carton', unit:'12 x 750ml', price:420, stock:'in' },
-  { id:'MZ030', name:'BBQ Flavour Sauce 340g', cat:'sauces', pack:'Carton', unit:'24 x 340g', price:920, stock:'in' },
-  { id:'MZ031', name:'Pure Sunflower Cooking Oil 5L', cat:'sauces', pack:'Carton', unit:'4 x 5L', price:1450, stock:'low' },
-  { id:'MZ032', name:'Multi-Surface Cleaning Liquid 1L', cat:'household', pack:'Carton', unit:'12 x 1L', price:780, stock:'in' },
-  { id:'MZ033', name:'Glue Stick 21g', cat:'household', pack:'Box', unit:'20 pcs', price:140, stock:'low' },
-  { id:'MZ034', name:'Dishwashing Liquid Lemon 900ml', cat:'household', pack:'Carton', unit:'12 x 900ml', price:850, stock:'in' },
-];
+  { id:'MZ001', name:'Coast Full Cream Milk Powder 400g', cat:'dairy', icon:'🥛', pack:'Carton', unit:'24 x 400g', price:1180, stock:'out' },
+  { id:'MZ002', name:'Dutch Farm UHT Milk 1L', cat:'dairy', icon:'🥛', pack:'Carton', unit:'12 x 1L', price:640, stock:'in' },
+  { id:'MZ003', name:'Golden Churn Butter 200g', cat:'dairy', icon:'🧈', pack:'Box', unit:'24 x 200g', price:1450, stock:'in' },
+  { id:'MZ004', name:'Cimory Yogurt Drink Strawberry 125ml', cat:'dairy', icon:'🍓', pack:'Carton', unit:'40 x 125ml', price:160, stock:'low' },
+  { id:'MZ005', name:'Ceylon Breakfast Tea 100 Bags', cat:'tea', icon:'🍵', pack:'Box', unit:'12 x 100bags', price:920, stock:'in' },
+  { id:'MZ006', name:'Green Tea Classic 25 Bags', cat:'tea', icon:'🍃', pack:'Box', unit:'24 x 25bags', price:540, stock:'in' },
+  { id:'MZ007', name:'Nescafe Classic Instant Coffee 200g', cat:'coffee', icon:'☕', pack:'Carton', unit:'12 x 200g', price:1980, stock:'low' },
+  { id:'MZ008', name:'3-in-1 Instant Coffee Mix 20g', cat:'coffee', icon:'☕', pack:'Box', unit:'30 x 20g', price:310, stock:'in' },
+  { id:'MZ009', name:'Sparkling Orange Soda 330ml', cat:'beverages', icon:'🥤', pack:'Carton', unit:'24 x 330ml', price:480, stock:'in' },
+  { id:'MZ010', name:'Tropical Fruit Juice 1L', cat:'beverages', icon:'🧃', pack:'Carton', unit:'12 x 1L', price:660, stock:'in' },
+  { id:'MZ011', name:'Mineral Water 500ml', cat:'beverages', icon:'💧', pack:'Carton', unit:'24 x 500ml', price:220, stock:'in' },
+  { id:'MZ012', name:'Premium Medjool Dates 500g', cat:'dried-fruits', icon:'🌰', pack:'Box', unit:'10 x 500g', price:2100, stock:'low' },
+  { id:'MZ013', name:'Mixed Dried Fruits 250g', cat:'dried-fruits', icon:'🍇', pack:'Box', unit:'20 x 250g', price:1350, stock:'in' },
+  { id:'MZ014', name:'Basmati Rice 5kg', cat:'grains', icon:'🌾', pack:'Bag', unit:'1 x 5kg', price:340, stock:'in' },
+  { id:'MZ015', name:'Rolled Oats 500g', cat:'grains', icon:'🥣', pack:'Carton', unit:'12 x 500g', price:980, stock:'in' },
+  { id:'MZ016', name:'Peanut Butter Crunchy 340g', cat:'grains', icon:'🥜', pack:'Carton', unit:'12 x 340g', price:1120, stock:'low' },
+  { id:'MZ017', name:'Overload Chocolate Bar 40g', cat:'confectionary', icon:'🍫', pack:'Carton', unit:'24 x 40g', price:790, stock:'low' },
+  { id:'MZ018', name:'Butter Cream Crackers 300g', cat:'confectionary', icon:'🍪', pack:'Carton', unit:'12 x 300g', price:860, stock:'in' },
+  { id:'MZ019', name:'Assorted Gummy Candy 100g', cat:'confectionary', icon:'🍬', pack:'Box', unit:'30 x 100g', price:610, stock:'in' },
+  { id:'MZ020', name:'Chicken Chunk in Sunflower Oil 185g', cat:'canned', icon:'🍗', pack:'Carton', unit:'24 x 185g', price:1750, stock:'in' },
+  { id:'MZ021', name:'Tropical Fruit Cocktail 420g', cat:'canned', icon:'🍍', pack:'Carton', unit:'24 x 420g', price:850, stock:'low' },
+  { id:'MZ022', name:'Corned Beef 340g', cat:'canned', icon:'🥫', pack:'Carton', unit:'24 x 340g', price:1980, stock:'in' },
+  { id:'MZ023', name:'All-Purpose Baking Flour 1kg', cat:'cooking', icon:'🌾', pack:'Bag', unit:'1 x 1kg', price:75, stock:'in' },
+  { id:'MZ024', name:'Fine Granulated Sugar 1kg', cat:'cooking', icon:'🧂', pack:'Bag', unit:'1 x 1kg', price:60, stock:'in' },
+  { id:'MZ025', name:'Baking Powder 100g', cat:'cooking', icon:'🧁', pack:'Box', unit:'24 x 100g', price:540, stock:'in' },
+  { id:'MZ026', name:'Strawberry Body Wash 400ml', cat:'personal-care', icon:'🧴', pack:'Carton', unit:'12 x 400ml', price:960, stock:'in' },
+  { id:'MZ027', name:'Refreshing Hand Sanitizer 250ml', cat:'personal-care', icon:'🧼', pack:'Carton', unit:'24 x 250ml', price:1080, stock:'in' },
+  { id:'MZ028', name:'Herbal Shampoo 350ml', cat:'personal-care', icon:'🧴', pack:'Carton', unit:'12 x 350ml', price:890, stock:'low' },
+  { id:'MZ029', name:'White Vinegar 750ml', cat:'sauces', icon:'🍶', pack:'Carton', unit:'12 x 750ml', price:420, stock:'in' },
+  { id:'MZ030', name:'BBQ Flavour Sauce 340g', cat:'sauces', icon:'🍯', pack:'Carton', unit:'24 x 340g', price:920, stock:'in' },
+  { id:'MZ031', name:'Pure Sunflower Cooking Oil 5L', cat:'sauces', icon:'🛢️', pack:'Carton', unit:'4 x 5L', price:1450, stock:'low' },
+  { id:'MZ032', name:'Multi-Surface Cleaning Liquid 1L', cat:'household', icon:'🧽', pack:'Carton', unit:'12 x 1L', price:780, stock:'in' },
+  { id:'MZ033', name:'Glue Stick 21g', cat:'household', icon:'🖇️', pack:'Box', unit:'20 pcs', price:140, stock:'low' },
+  { id:'MZ034', name:'Dishwashing Liquid Lemon 900ml', cat:'household', icon:'🧴', pack:'Carton', unit:'12 x 900ml', price:850, stock:'in' },
 
+  /* --- Daiwa --- */
+  { id:'MZ035', name:'Daiwa Dishwashing Liquid Lemon 3.6L', cat:'household', icon:'🧴', pack:'Carton', unit:'4 x 3.6L', price:1350, stock:'in' },
+  { id:'MZ036', name:'Daiwa Dishwashing Liquid Concentrate & Hygiene 3.6L', cat:'household', icon:'🧴', pack:'Carton', unit:'4 x 3.6L', price:1450, stock:'in' },
+  { id:'MZ037', name:'Daiwa Dishwashing Liquid Mint 3.8L', cat:'household', icon:'🧴', pack:'Carton', unit:'12 x 3.8L', price:3200, stock:'in' },
+  { id:'MZ038', name:'Daiwa Laundry Liquid Detergent 3.5L', cat:'household', icon:'🧺', pack:'Carton', unit:'4 x 3.5L', price:1550, stock:'in' },
+  { id:'MZ039', name:'Daiwa Fabric Softener 3.5L', cat:'household', icon:'🧺', pack:'Carton', unit:'4 x 3.5L', price:1450, stock:'in' },
+  { id:'MZ040', name:'Daiwa Powder Detergent 5kg', cat:'household', icon:'📦', pack:'Carton', unit:'4 x 5kg', price:1680, stock:'in' },
+  { id:'MZ041', name:'Daiwa Liquid Hand Soap 3.5L', cat:'household', icon:'🧼', pack:'Carton', unit:'4 x 3.5L', price:1250, stock:'in' },
+  { id:'MZ042', name:'Daiwa Dust Collector Liquid 3.5L', cat:'household', icon:'🧽', pack:'Carton', unit:'4 x 3.5L', price:1350, stock:'in' },
+  { id:'MZ043', name:'Daiwa Glass Cleaner 3.5L', cat:'household', icon:'🪟', pack:'Carton', unit:'4 x 3.5L', price:1350, stock:'in' },
+  { id:'MZ044', name:'Daiwa Daily Gloss Liquid 3.5L', cat:'household', icon:'✨', pack:'Carton', unit:'4 x 3.5L', price:1350, stock:'in' },
+  { id:'MZ045', name:'Daiwa Turbo Toilet Cleaner 900ml - White', cat:'household', icon:'🚽', pack:'Carton', unit:'12 x 900ml', price:1450, stock:'in', img:'img/household&cleaning/Daiwa Turbo Toilet Cleaner 900 ml.-White.jpg' },
+  { id:'MZ074', name:'Daiwa Turbo Toilet Cleaner 900ml - Pink', cat:'household', icon:'🚽', pack:'Carton', unit:'12 x 900ml', price:1450, stock:'in', img:'img/household&cleaning/Daiwa Turbo Toilet Cleaner 900 ml.-Pink.jpg' },
+  { id:'MZ075', name:'Daiwa Turbo Toilet Cleaner 900ml - Purple', cat:'household', icon:'🚽', pack:'Carton', unit:'12 x 900ml', price:1450, stock:'in', img:'img/household&cleaning/Daiwa Turbo Toilet Cleaner 900 ml.-Purple.jpg' },
+  { id:'MZ046', name:'Daiwa Drain Unblocker 1L', cat:'household', icon:'🚰', pack:'Carton', unit:'12 x 1L', price:1780, stock:'in', img:'img/household&cleaning/Daiwa Drain Unblocker 1000 ml.jpg' },
+  { id:'MZ047', name:'Daiwa Disinfectant Deodorizer 3.5L', cat:'household', icon:'🧴', pack:'Carton', unit:'4 x 3.5L', price:1350, stock:'in' },
+  { id:'MZ048', name:'Daiwa Floor Cleaner 3.8L (Floral Mist/Lemon/Aqua Blue/Lavender)', cat:'household', icon:'🧹', pack:'Carton', unit:'4 x 3.8L', price:1550, stock:'in' },
+  { id:'MZ073', name:'Daiwa Floor Polishing Wax 1L', cat:'household', icon:'✨', pack:'Carton', unit:'12 x 1L', price:850, stock:'in', img:'img/household&cleaning/Daiwa Floor Polishing Wax 1000 ml.jpg' },
+  { id:'MZ049', name:'Daiwa Floor Polishing Wax 3.5L', cat:'household', icon:'✨', pack:'Carton', unit:'4 x 3.5L', price:1550, stock:'in', img:'img/household&cleaning/Daiwa Floor Polishing Wax 3500 ml.jpg' },
+  { id:'MZ050', name:'Daiwa Hygiene Multi-Use Disinfectant 3.5L', cat:'household', icon:'🧴', pack:'Carton', unit:'4 x 3.5L', price:1450, stock:'in' },
+
+  /* --- Sanzoft --- */
+  { id:'MZ051', name:'Sanzoft Laundry Liquid Detergent 5L - Pink Rose Scent', cat:'household', icon:'🧺', pack:'Carton', unit:'4 x 5L', price:1980, stock:'in', img:'img/household&cleaning/Sanzoft Laundry Liquid Detergent 5000 ml.-Pink Rose Scent.jpg' },
+  { id:'MZ081', name:'Sanzoft Laundry Liquid Detergent 5L - Violet Scent', cat:'household', icon:'🧺', pack:'Carton', unit:'4 x 5L', price:1980, stock:'in', img:'img/household&cleaning/Sanzoft Laundry Liquid Detergent 5000 ml.-Violet Scent.jpg' },
+  { id:'MZ052', name:'Sanzoft Liquid Detergent 5L (Mystical Perfume)', cat:'household', icon:'🧺', pack:'Carton', unit:'4 x 5L', price:1980, stock:'in' },
+  { id:'MZ053', name:'Sanzoft Fabric Softener 3.8L - Sunny Sweet', cat:'household', icon:'🧺', pack:'Carton', unit:'4 x 3.8L', price:1450, stock:'in' },
+  { id:'MZ078', name:'Sanzoft Fabric Softener 3.8L - Lovely Pink', cat:'household', icon:'🧺', pack:'Carton', unit:'4 x 3.8L', price:1450, stock:'in', img:'img/household&cleaning/Sanzoft Fabric Softener 3800 ml. -Lovely Pink.jpg' },
+  { id:'MZ079', name:'Sanzoft Fabric Softener 3.8L - Sense of Violet', cat:'household', icon:'🧺', pack:'Carton', unit:'4 x 3.8L', price:1450, stock:'in', img:'img/household&cleaning/Sanzoft Fabric Softener 3800 ml. -Sense of Violet.jpg' },
+  { id:'MZ080', name:'Sanzoft Fabric Softener 3.8L - Softly Touch', cat:'household', icon:'🧺', pack:'Carton', unit:'4 x 3.8L', price:1450, stock:'in', img:'img/household&cleaning/Sanzoft Fabric Softener 3800 ml. -Softly Touch.jpg' },
+  { id:'MZ054', name:'Sanzoft Fabric Sensation Spray 270ml (Lavish Pink/Elegant Violet/Deep Blue Cotton)', cat:'household', icon:'🌸', pack:'Carton', unit:'12 x 270ml', price:1080, stock:'in' },
+
+  /* --- Pinto --- */
+  { id:'MZ055', name:'Pinto Click Dishwashing Liquid 750ml (Lemon/Kiwi/Pomelo/Passion Fruit)', cat:'household', icon:'🧴', pack:'Carton', unit:'12 x 750ml', price:980, stock:'in' },
+  { id:'MZ056', name:'Pinto Click Dishwashing Liquid Pure & Care 750ml', cat:'household', icon:'🧴', pack:'Carton', unit:'12 x 750ml', price:980, stock:'in' },
+
+  /* --- R-Fresh --- */
+  { id:'MZ057', name:'R-Fresh Air Freshener Gel 180g - Jasmine', cat:'household', icon:'🌸', pack:'Carton', unit:'24 x 180g', price:1180, stock:'in', img:'img/household&cleaning/R-Fresh Air Freshener Gel 180 gram.- Jasmine.jpg' },
+  { id:'MZ069', name:'R-Fresh Air Freshener Gel 180g - Lavender', cat:'household', icon:'🌸', pack:'Carton', unit:'24 x 180g', price:1180, stock:'in', img:'img/household&cleaning/R-Fresh Air Freshener Gel 180 gram.-Lavender.jpg' },
+  { id:'MZ070', name:'R-Fresh Air Freshener Gel 180g - Orange', cat:'household', icon:'🌸', pack:'Carton', unit:'24 x 180g', price:1180, stock:'in' },
+  { id:'MZ071', name:'R-Fresh Air Freshener Gel 180g - Lemon', cat:'household', icon:'🌸', pack:'Carton', unit:'24 x 180g', price:1180, stock:'in', img:'img/household&cleaning/R-Fresh Air Freshener Gel 180 gram.- Lemon.jpg' },
+  { id:'MZ072', name:'R-Fresh Air Freshener Gel 180g - Lily', cat:'household', icon:'🌸', pack:'Carton', unit:'24 x 180g', price:1180, stock:'in', img:'img/household&cleaning/R-Fresh Air Freshener Gel 180 gram.-Lily.jpg' },
+
+  /* --- Carefor --- */
+  { id:'MZ058', name:'Carefor Air Freshener Gel 180g - Rose', cat:'household', icon:'🌸', pack:'Carton', unit:'24 x 180g', price:1180, stock:'in', img:'img/household&cleaning/Carefor Air Freshener Gel 180 gram.- Rose.jpg' },
+  { id:'MZ076', name:'Carefor Air Freshener Gel 180g - Lemon Grass', cat:'household', icon:'🌸', pack:'Carton', unit:'24 x 180g', price:1180, stock:'in', img:'img/household&cleaning/Carefor Air Freshener Gel 180 gram.- Lemon Grass.jpg' },
+  { id:'MZ077', name:'Carefor Air Freshener Gel 180g - Coffee', cat:'household', icon:'🌸', pack:'Carton', unit:'24 x 180g', price:1180, stock:'in', img:'img/household&cleaning/Carefor Air Freshener Gel 180 gram.- Coffee.jpg' },
+
+  /* --- Ninja (car care) --- */
+  { id:'MZ059', name:'Ninja Car Wash Clean & Clear 1L', cat:'household', icon:'🚗', pack:'Carton', unit:'12 x 1L', price:1450, stock:'in' },
+  { id:'MZ060', name:'Ninja Concentrated Car Wash 1L', cat:'household', icon:'🚗', pack:'Carton', unit:'12 x 1L', price:1650, stock:'in' },
+  { id:'MZ061', name:'Ninja Leather Restorer Shine & Protect 400ml', cat:'household', icon:'🛋️', pack:'Carton', unit:'12 x 400ml', price:1180, stock:'in' },
+  { id:'MZ062', name:'Ninja Quick Wax Shine & Protect 400ml', cat:'household', icon:'✨', pack:'Carton', unit:'12 x 400ml', price:1180, stock:'in' },
+  { id:'MZ063', name:'Ninja Paste Wax 150g', cat:'household', icon:'🪞', pack:'Carton', unit:'24 x 150g', price:1450, stock:'in' },
+  { id:'MZ064', name:'Ninja Ultra Gloss Spray Wax 400ml', cat:'household', icon:'✨', pack:'Carton', unit:'12 x 400ml', price:1180, stock:'in' },
+  { id:'MZ065', name:'Ninja Tire Shine 400ml', cat:'household', icon:'🛞', pack:'Carton', unit:'12 x 400ml', price:1080, stock:'in' },
+  { id:'MZ066', name:'Ninja Black Tires Shine & Protect Spray 510ml', cat:'household', icon:'🛞', pack:'Carton', unit:'12 x 510ml', price:1180, stock:'in' },
+  { id:'MZ067', name:'Ninja Automotive Multi Purpose Spray 200ml', cat:'household', icon:'🔧', pack:'Carton', unit:'24 x 200ml', price:1580, stock:'in' },
+  { id:'MZ068', name:'Ninja Anti Rat Spray 250ml', cat:'household', icon:'🐭', pack:'Carton', unit:'24 x 250ml', price:1980, stock:'in' },
+];
 const ATOLLS = {
   'Haa Alif (HA)': ['Dhidhdhoo', 'Hoarafushi', 'Kelaa', 'Ihavandhoo'],
   'Haa Dhaalu (HDh)': ['Kulhudhuffushi', 'Nolhivaranfaru', 'Hanimaadhoo'],
@@ -105,6 +163,9 @@ function saveOrders(orders){
   localStorage.setItem(ordersKey(), JSON.stringify(orders));
 }
 function productImg(p){
+  // Some products ship with a real photo already placed at a custom path —
+  // use that if set on the product (matches script.js's logic).
+  if (p.img) return p.img;
   return `img/products/${p.id}.png`;
 }
 
@@ -295,11 +356,16 @@ function placeOrder(customer){
   const ids = Object.keys(cart);
   if (ids.length === 0) return null;
 
+  // Guard against a stale/out-of-sync PRODUCTS list: skip any cart line
+  // whose product can no longer be found instead of throwing and leaving
+  // the "Placing order…" button stuck forever.
   const items = ids.map(id=>{
     const p = PRODUCTS.find(p=>p.id===id);
+    if (!p) return null;
     const qty = cart[id];
     return { id:p.id, name:p.name, pack:p.pack, unit:p.unit, price:p.price, qty };
-  });
+  }).filter(Boolean);
+  if (items.length === 0) return null;
   const sub = items.reduce((s,it)=> s + it.price*it.qty, 0);
   const fee = customer && typeof customer.deliveryFee === 'number' ? customer.deliveryFee : null;
   const total = customer && typeof customer.total === 'number' ? customer.total : sub;

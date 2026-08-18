@@ -110,6 +110,39 @@
       <div class="hero-dots" id="heroDots"></div>
     </section>
 
+    <!-- Brands ticker (infinite auto-scroll) -->
+    <section class="brands-ticker" id="brandsTicker">
+      <div class="brands-ticker-eyebrow">Our Brands</div>
+      <div class="brands-ticker-viewport">
+        <div class="brands-ticker-track" id="brandsTickerTrack">
+          <!-- Set A -->
+          <div class="brands-ticker-item"><img src="img/our brands/2.png" alt="Brand 2" onerror="this.parentElement.classList.add('img-missing')"></div>
+          <div class="brands-ticker-item"><img src="img/our brands/3.png" alt="Brand 3" onerror="this.parentElement.classList.add('img-missing')"></div>
+          <div class="brands-ticker-item"><img src="img/our brands/4.png" alt="Brand 4" onerror="this.parentElement.classList.add('img-missing')"></div>
+          <div class="brands-ticker-item"><img src="img/our brands/5.png" alt="Brand 5" onerror="this.parentElement.classList.add('img-missing')"></div>
+          <div class="brands-ticker-item"><img src="img/our brands/6.png" alt="Brand 6" onerror="this.parentElement.classList.add('img-missing')"></div>
+          <!-- Set B (duplicate for seamless loop) -->
+          <div class="brands-ticker-item" aria-hidden="true"><img src="img/our brands/2.png" alt="" onerror="this.parentElement.classList.add('img-missing')"></div>
+          <div class="brands-ticker-item" aria-hidden="true"><img src="img/our brands/3.png" alt="" onerror="this.parentElement.classList.add('img-missing')"></div>
+          <div class="brands-ticker-item" aria-hidden="true"><img src="img/our brands/4.png" alt="" onerror="this.parentElement.classList.add('img-missing')"></div>
+          <div class="brands-ticker-item" aria-hidden="true"><img src="img/our brands/5.png" alt="" onerror="this.parentElement.classList.add('img-missing')"></div>
+          <div class="brands-ticker-item" aria-hidden="true"><img src="img/our brands/6.png" alt="" onerror="this.parentElement.classList.add('img-missing')"></div>
+          <!-- Set C (extra copy so wide screens never show a gap before the loop repeats) -->
+          <div class="brands-ticker-item" aria-hidden="true"><img src="img/our brands/2.png" alt="" onerror="this.parentElement.classList.add('img-missing')"></div>
+          <div class="brands-ticker-item" aria-hidden="true"><img src="img/our brands/3.png" alt="" onerror="this.parentElement.classList.add('img-missing')"></div>
+          <div class="brands-ticker-item" aria-hidden="true"><img src="img/our brands/4.png" alt="" onerror="this.parentElement.classList.add('img-missing')"></div>
+          <div class="brands-ticker-item" aria-hidden="true"><img src="img/our brands/5.png" alt="" onerror="this.parentElement.classList.add('img-missing')"></div>
+          <div class="brands-ticker-item" aria-hidden="true"><img src="img/our brands/6.png" alt="" onerror="this.parentElement.classList.add('img-missing')"></div>
+          <!-- Set D (extra copy so wide screens never show a gap before the loop repeats) -->
+          <div class="brands-ticker-item" aria-hidden="true"><img src="img/our brands/2.png" alt="" onerror="this.parentElement.classList.add('img-missing')"></div>
+          <div class="brands-ticker-item" aria-hidden="true"><img src="img/our brands/3.png" alt="" onerror="this.parentElement.classList.add('img-missing')"></div>
+          <div class="brands-ticker-item" aria-hidden="true"><img src="img/our brands/4.png" alt="" onerror="this.parentElement.classList.add('img-missing')"></div>
+          <div class="brands-ticker-item" aria-hidden="true"><img src="img/our brands/5.png" alt="" onerror="this.parentElement.classList.add('img-missing')"></div>
+          <div class="brands-ticker-item" aria-hidden="true"><img src="img/our brands/6.png" alt="" onerror="this.parentElement.classList.add('img-missing')"></div>
+        </div>
+      </div>
+    </section>
+
     <!-- Categories toggle (mobile) -->
     <div class="cat-toggle-bar" id="catToggleBar">
       <button class="cat-toggle-btn" id="catToggleBtn">
@@ -131,7 +164,7 @@
     <!-- Product grid -->
     <section class="product-grid" id="productGrid"></section>
 
-    <p class="empty-state" id="emptyState" hidden>No products found. Subukan mo ibang keyword po.</p>
+    <p class="empty-state" id="emptyState" hidden>No products found.</p>
 
   </div>
 </main>
@@ -251,14 +284,18 @@
     <span>Home</span>
   </button>
   <button class="bn-item" data-action="orders">
-    <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-5 8h6m-6 4h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span class="bn-icon-wrap">
+      <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-5 8h6m-6 4h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="bn-badge js-orders-notif-count" id="bnOrdersCount" hidden>0</span>
+    </span>
     <span>Orders</span>
-    <span class="bn-badge js-orders-notif-count" id="bnOrdersCount" hidden>0</span>
   </button>
   <button class="bn-item" data-action="cart">
-    <svg viewBox="0 0 24 24"><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="8" cy="21" r="1.4" fill="currentColor"/><circle cx="19" cy="21" r="1.4" fill="currentColor"/></svg>
+    <span class="bn-icon-wrap">
+      <svg viewBox="0 0 24 24"><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="8" cy="21" r="1.4" fill="currentColor"/><circle cx="19" cy="21" r="1.4" fill="currentColor"/></svg>
+      <span class="bn-badge js-cart-count" id="bnCartCount" hidden>0</span>
+    </span>
     <span>Cart</span>
-    <span class="bn-badge js-cart-count" id="bnCartCount" hidden>0</span>
   </button>
   <button class="bn-item" data-action="profile">
     <svg viewBox="0 0 24 24"><path d="M12 12a4.5 4.5 0 100-9 4.5 4.5 0 000 9zM4.5 20.25a7.5 7.5 0 0115 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -314,10 +351,10 @@
     </div>
 
     <p class="auth-terms" id="authTerms" hidden>
-      By signing up, you agree to our <a href="terms.html" target="_blank" rel="noopener">Terms</a> &amp; <a href="privacy.html" target="_blank" rel="noopener">Privacy Policy</a>
+      By signing up, you agree to our <span class="auth-terms-links"><a href="terms.html" target="_blank" rel="noopener">Terms</a> &amp; <a href="privacy.html" target="_blank" rel="noopener">Privacy Policy</a></span>
     </p>
 
-    <div class="auth-tabs">
+    <div class="auth-tabs" id="authTabs">
       <button class="auth-tab active" data-tab="login">Login</button>
       <button class="auth-tab" data-tab="register">Register</button>
       <div class="auth-tab-highlight" id="authTabHighlight"></div>
@@ -368,32 +405,23 @@
         <input type="tel" placeholder="7xx-xxxx" required>
         <small class="field-error" id="regMobileError" hidden>The mobile has already been taken.</small>
       </label>
-      <label class="auth-field" id="regEmailField">
-        <span>Email (optional)</span>
-        <input type="email" placeholder="you@example.com">
-        <small class="field-error" id="regEmailError" hidden>The email has already been taken.</small>
-      </label>
-      <label class="auth-field">
-        <span>Password</span>
-        <div class="auth-password-wrap">
-          <input type="password" placeholder="••••••••" required>
-          <button type="button" class="auth-eye-btn" data-eye-toggle aria-label="Show password">
-            <svg viewBox="0 0 24 24" class="eye-open"><path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
-            <svg viewBox="0 0 24 24" class="eye-closed"><path d="M3 3l18 18M10.6 10.6a3 3 0 004.24 4.24M6.6 6.6C3.9 8.3 1.5 12 1.5 12s3.5 7 10.5 7c1.9 0 3.5-.5 4.8-1.2M17.4 17.4C20.1 15.7 22.5 12 22.5 12s-1.6-3.2-4.6-5.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </button>
-        </div>
-      </label>
-      <label class="auth-field">
-        <span>Confirm Password</span>
-        <div class="auth-password-wrap">
-          <input type="password" placeholder="••••••••" required>
-          <button type="button" class="auth-eye-btn" data-eye-toggle aria-label="Show password">
-            <svg viewBox="0 0 24 24" class="eye-open"><path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
-            <svg viewBox="0 0 24 24" class="eye-closed"><path d="M3 3l18 18M10.6 10.6a3 3 0 004.24 4.24M6.6 6.6C3.9 8.3 1.5 12 1.5 12s3.5 7 10.5 7c1.9 0 3.5-.5 4.8-1.2M17.4 17.4C20.1 15.7 22.5 12 22.5 12s-1.6-3.2-4.6-5.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </button>
-        </div>
-      </label>
       <button type="submit" class="auth-submit-btn">Register</button>
+    </form>
+
+    <form id="otpForm" class="auth-form" hidden>
+      <button type="button" class="auth-otp-back" id="otpBackBtn">
+        <svg viewBox="0 0 24 24" width="15" height="15"><path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Change mobile number
+      </button>
+      <p class="auth-otp-desc">Enter the 6-digit code sent to <strong id="otpMobileLabel"></strong></p>
+      <p class="auth-otp-demo" id="otpDemoHint"></p>
+      <label class="auth-field" id="otpField">
+        <span>Verification Code</span>
+        <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="000000" id="otpInput" autocomplete="one-time-code" required>
+        <small class="field-error" id="otpError" hidden>Incorrect code. Please try again.</small>
+      </label>
+      <button type="button" class="auth-otp-resend" id="otpResendBtn">Resend code</button>
+      <button type="submit" class="auth-submit-btn">Verify &amp; Create Account</button>
     </form>
 
     <p class="auth-switch" id="authSwitchLine">
@@ -452,6 +480,7 @@
   <div class="confirm-card">
     <h3 class="confirm-title">Are you sure you want to log out?</h3>
     <p class="confirm-sub">You'll need to log in again to access your account.</p>
+    <div class="confirm-note" id="confirmNote" hidden></div>
     <div class="confirm-actions">
       <button type="button" class="confirm-cancel-btn" id="logoutCancelBtn">Cancel</button>
       <button type="button" class="confirm-ok-btn" id="logoutConfirmBtn">Log out</button>
