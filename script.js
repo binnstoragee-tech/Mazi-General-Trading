@@ -130,7 +130,14 @@ const HERO_SLIDES = [
 function accountId(){
   try{
     const session = JSON.parse(localStorage.getItem('mazi_session') || 'null');
-    return session && session.email ? session.email.toLowerCase() : 'guest';
+    if (!session) return 'guest';
+    // Accounts here are identified by mobile number (see isNewAccount check
+    // in the OTP login flow) — email is optional and blank until the person
+    // fills it in from Profile. Keying this off email meant every mobile
+    // login stayed on the 'guest' bucket, which made the guest cart key and
+    // the "logged in" cart key collide and wiped the cart on login.
+    const key = (session.mobile || session.email || '').toLowerCase();
+    return key || 'guest';
   } catch(e){ return 'guest'; }
 }
 
@@ -191,9 +198,81 @@ let ckSlipFile = null;
 let ckPickupDayIndex = 0;
 
 /* ============ Helpers ============ */
-const fmt = n => 'MVR ' + n.toFixed(2);
+// Maldivian Rufiyaa is pegged to the US Dollar by the Maldives Monetary
+// Authority at MVR 15.42 = USD 1 — this is the standard peg rate used for
+// the shop's MVR -> USD display conversion.
+const USD_PER_MVR = 1 / 15.42;
+function getCurrency(){
+  return localStorage.getItem('mazi_currency') || 'MVR';
+}
+function setCurrency(cur){
+  if (cur !== 'MVR' && cur !== 'USD') return;
+  localStorage.setItem('mazi_currency', cur);
+  const session = getSession();
+  if (session) setSession({ ...session, currency: cur });
+  syncCurrencyToggleUI();
+  refreshVisibleCurrency();
+}
+// MVR currency icon markup — replaces the plain "MVR" text everywhere a
+// price is shown.
+const MVR_ICON = '<img class="cur-icon" src="img/mvr-icon-black.png" alt="MVR">';
+// Shop-browsing price display — follows the MVR/USD toggle in the header.
+// Returns HTML (not plain text) since MVR amounts now include the icon —
+// call sites must use innerHTML, not textContent.
+const fmt = n => getCurrency() === 'USD'
+  ? '$' + (n * USD_PER_MVR).toFixed(2)
+  : MVR_ICON + n.toFixed(2);
+// Order price display — orders now lock in whichever currency (MVR or
+// USD) the shopper had selected at checkout, via order.currency, so
+// order history/receipts stay in that currency regardless of what the
+// shop-browsing toggle is set to afterward. Also returns HTML.
+function fmtCur(n, cur){
+  return (cur === 'USD')
+    ? '$' + (n * USD_PER_MVR).toFixed(2)
+    : MVR_ICON + n.toFixed(2);
+}
+// Legacy alias for any call site that hasn't been passed an explicit
+// currency — falls back to the live toggle.
+const fmtMvr = n => fmtCur(n, getCurrency());
 const $ = sel => document.querySelector(sel);
 const $$ = (sel, root) => Array.from((root || document).querySelectorAll(sel));
+
+function syncCurrencyToggleUI(){
+  const cur = getCurrency();
+  $$('[data-currency]').forEach(btn=>{
+    btn.classList.toggle('active', btn.dataset.currency === cur);
+  });
+  positionCurrencyThumbs();
+}
+// Slides the glass thumb behind whichever currency button is active.
+// Re-measures on every call so it stays correct across screen sizes
+// (mobile hides the icon, which changes the MVR button's width).
+function positionCurrencyThumbs(){
+  $$('.currency-toggle').forEach(toggle=>{
+    const thumb = toggle.querySelector('.currency-toggle-thumb');
+    const activeBtn = toggle.querySelector('.currency-toggle-btn.active');
+    if (!thumb || !activeBtn) return;
+    thumb.style.left = activeBtn.offsetLeft + 'px';
+    thumb.style.width = activeBtn.offsetWidth + 'px';
+  });
+}
+window.addEventListener('resize', positionCurrencyThumbs);
+// Re-renders whatever price displays are currently on screen after the
+// currency toggle changes. Past orders/receipts are intentionally left
+// untouched here — they stay in whichever currency they were placed in
+// (order.currency), not the live toggle.
+function refreshVisibleCurrency(){
+  renderProducts();
+  updateCartUI();
+  if ($('#productView') && $('#productView').classList.contains('open') && state.currentProductId != null){
+    const p = PRODUCTS.find(p=>p.id===state.currentProductId);
+    if (p){
+      renderProductDetail(p);
+      renderSimilarProducts(p);
+      renderOtherProducts(p);
+    }
+  }
+}
 
 function saveCart(){
   localStorage.setItem(cartKey(), JSON.stringify(state.cart));
@@ -211,13 +290,13 @@ function saveRegisteredAccount(mobile){
   accounts.push({ mobile });
   localStorage.setItem('mazi_accounts', JSON.stringify(accounts));
 }
-function clearRegisterErrors(){
-  $('#regMobileField').classList.remove('has-error');
-  $('#regMobileError').hidden = true;
+function clearMobileError(){
+  $('#mobileField').classList.remove('has-error');
+  $('#mobileError').hidden = true;
 }
 
-/* ============ Register OTP verification (demo — no real SMS sent) ============ */
-let pendingRegistration = null; // { firstName, lastName, mobile }
+/* ============ Sign in via mobile number + OTP (demo — no real SMS sent) ============ */
+let pendingMobile = null; // full mobile string, e.g. "+9607770010"
 let currentOtpCode = null;
 function generateOtpCode(){
   return String(Math.floor(100000 + Math.random() * 900000));
@@ -226,25 +305,112 @@ function maskMobile(mobile){
   if (mobile.length <= 4) return mobile;
   return mobile.slice(0, 2) + '•'.repeat(Math.max(0, mobile.length - 4)) + mobile.slice(-2);
 }
-function showOtpStep(){
+function showMobileStep(){
+  const authScrollEl = document.querySelector('.auth-card-scroll');
+  const authStartHeight = authScrollEl ? authScrollEl.offsetHeight : null;
+  pendingMobile = null;
+  currentOtpCode = null;
+  clearMobileError();
+  $('#mobileInput').value = '';
+  $('#otpForm').hidden = true;
+  $('#mobileForm').hidden = false;
+  $('#authIconMobile').hidden = false;
+  $('#authIconKey').hidden = true;
+  $('#authTitle').textContent = 'Sign In';
+  $('#authSubtitle').textContent = 'Maldives mobile number';
+  if (authScrollEl && authStartHeight !== null) animateAuthCardHeight(authScrollEl, authStartHeight);
+}
+function showOtpStep(mobile){
+  const authScrollEl = document.querySelector('.auth-card-scroll');
+  const authStartHeight = authScrollEl ? authScrollEl.offsetHeight : null;
+  pendingMobile = mobile;
   currentOtpCode = generateOtpCode();
-  $('#registerForm').hidden = true;
+  $('#mobileForm').hidden = true;
   $('#otpForm').hidden = false;
-  $('#authTabs').hidden = true;
-  $('#authTerms').hidden = true;
-  $('#otpMobileLabel').textContent = maskMobile(pendingRegistration.mobile);
+  $('#authIconMobile').hidden = true;
+  $('#authIconKey').hidden = false;
+  $('#authTitle').textContent = 'Enter OTP';
+  $('#authSubtitle').textContent = mobile;
   $('#otpDemoHint').textContent = `Demo mode — no SMS is actually sent. Your code is: ${currentOtpCode}`;
-  $('#otpInput').value = '';
+  resetOtpBoxes();
+  if (authScrollEl && authStartHeight !== null) animateAuthCardHeight(authScrollEl, authStartHeight);
+}
+
+/* ============ 6-box OTP input: auto-advance, backspace, paste, and a
+   little pop/shake animation feedback ============ */
+function getOtpBoxes(){
+  return Array.from(document.querySelectorAll('#otpBoxes .otp-box'));
+}
+function syncOtpValue(){
+  $('#otpInput').value = getOtpBoxes().map(b => b.value).join('');
+}
+function resetOtpBoxes(){
+  const boxes = getOtpBoxes();
+  boxes.forEach(b => { b.value = ''; b.classList.remove('filled', 'error'); });
+  $('#otpBoxes').classList.remove('shake');
   $('#otpField').classList.remove('has-error');
   $('#otpError').hidden = true;
+  syncOtpValue();
+  if (boxes[0]) setTimeout(() => boxes[0].focus(), 50);
 }
-function backToRegisterForm(){
-  $('#otpForm').hidden = true;
-  $('#registerForm').hidden = false;
-  $('#authTabs').hidden = false;
-  $('#authTerms').hidden = false;
-  pendingRegistration = null;
-  currentOtpCode = null;
+function markOtpError(){
+  const boxes = getOtpBoxes();
+  $('#otpField').classList.add('has-error');
+  $('#otpError').hidden = false;
+  boxes.forEach(b => b.classList.add('error'));
+  $('#otpBoxes').classList.remove('shake');
+  void $('#otpBoxes').offsetWidth; // restart animation
+  $('#otpBoxes').classList.add('shake');
+  if (boxes[0]) { boxes[0].focus(); boxes[0].select(); }
+}
+function setupOtpBoxes(){
+  const boxes = getOtpBoxes();
+  boxes.forEach((box, i) => {
+    box.addEventListener('input', () => {
+      box.value = box.value.replace(/[^0-9]/g, '').slice(0, 1);
+      $('#otpField').classList.remove('has-error');
+      $('#otpError').hidden = true;
+      box.classList.remove('error');
+      $('#otpBoxes').classList.remove('shake');
+      if (box.value){
+        box.classList.remove('filled');
+        void box.offsetWidth; // restart pop animation even on repeat digit
+        box.classList.add('filled');
+        if (i < boxes.length - 1) boxes[i + 1].focus();
+      } else {
+        box.classList.remove('filled');
+      }
+      syncOtpValue();
+    });
+    box.addEventListener('keydown', e => {
+      if (e.key === 'Backspace' && !box.value && i > 0){
+        const prev = boxes[i - 1];
+        prev.value = '';
+        prev.classList.remove('filled');
+        prev.focus();
+        syncOtpValue();
+      } else if (e.key === 'ArrowLeft' && i > 0){
+        e.preventDefault(); boxes[i - 1].focus();
+      } else if (e.key === 'ArrowRight' && i < boxes.length - 1){
+        e.preventDefault(); boxes[i + 1].focus();
+      }
+    });
+    box.addEventListener('paste', e => {
+      e.preventDefault();
+      const digits = (e.clipboardData || window.clipboardData).getData('text').replace(/[^0-9]/g, '');
+      if (!digits) return;
+      digits.split('').slice(0, boxes.length - i).forEach((ch, j) => {
+        boxes[i + j].value = ch;
+        boxes[i + j].classList.remove('filled');
+        void boxes[i + j].offsetWidth;
+        boxes[i + j].classList.add('filled');
+      });
+      syncOtpValue();
+      const nextEmpty = boxes.slice(i).find(b => !b.value);
+      (nextEmpty || boxes[boxes.length - 1]).focus();
+    });
+    box.addEventListener('focus', () => box.select());
+  });
 }
 
 function cartCount(){
@@ -383,7 +549,123 @@ function updateCategoryHighlights(){
   positionHighlight($('#mobileMenuList'), $('#mobileMenuHighlight'), false);
 }
 
-/* ============ Hero slideshow ============ */
+/* ============ Brands ticker: auto-scroll that pauses on drag/hover
+   and resumes the loop after the user lets go ============ */
+function initBrandsTicker(){
+  const viewport = document.querySelector('.brands-ticker-viewport');
+  const track = $('#brandsTickerTrack');
+  if (!viewport || !track) return;
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const SPEED = 42; // px per second
+
+  let setWidth = 0;    // width of one (of the 3 duplicated) item sets
+  let pos = 0;         // current translateX, always <= 0
+  let dragging = false;
+  let hovering = false;
+  let pausedAfterDrag = false;
+  let dragStartX = 0;
+  let dragStartPos = 0;
+  let resumeTimer = null;
+  let lastTime = null;
+
+  function measure(){
+    // The track markup has 4 duplicated sets of logos (A, B, C, D) so the
+    // loop never shows a gap on wide screens — must match that here or the
+    // wrap point falls mid-set and the loop stutters/jumps.
+    setWidth = track.scrollWidth / 4 || 0;
+  }
+  function applyTransform(){
+    track.style.transform = `translateX(${pos}px)`;
+  }
+  function wrap(){
+    if (setWidth <= 0) return;
+    while (pos <= -setWidth * 2) pos += setWidth;
+    while (pos > 0) pos -= setWidth;
+  }
+
+  function tick(t){
+    if (lastTime === null) lastTime = t;
+    const dt = (t - lastTime) / 1000;
+    lastTime = t;
+    if (!reduceMotion && !dragging && !hovering && !pausedAfterDrag){
+      pos -= SPEED * dt;
+      wrap();
+      applyTransform();
+    }
+    requestAnimationFrame(tick);
+  }
+
+  function pointerX(e){
+    return e.touches && e.touches.length ? e.touches[0].clientX : e.clientX;
+  }
+
+  function onDown(e){
+    dragging = true;
+    pausedAfterDrag = false;
+    clearTimeout(resumeTimer);
+    dragStartX = pointerX(e);
+    dragStartPos = pos;
+  }
+  function onMove(e){
+    if (dragging){
+      const delta = pointerX(e) - dragStartX;
+      pos = dragStartPos + delta;
+      wrap();
+      applyTransform();
+      return;
+    }
+    // Robust hover check (works even if mouseenter/mouseleave get missed
+    // due to overlapping elements) — purely geometric, based on cursor
+    // position vs the viewport's box.
+    if (typeof e.clientX === 'number'){
+      const r = viewport.getBoundingClientRect();
+      hovering = e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+    }
+  }
+  function onUp(){
+    if (!dragging) return;
+    dragging = false;
+    pausedAfterDrag = true;
+    clearTimeout(resumeTimer);
+    // brief pause before the auto-scroll loop continues on its own
+    resumeTimer = setTimeout(()=>{ pausedAfterDrag = false; lastTime = null; }, 1000);
+  }
+
+  track.addEventListener('touchstart', onDown, {passive:true});
+  track.addEventListener('touchmove', onMove, {passive:true});
+  track.addEventListener('touchend', onUp);
+  track.addEventListener('touchcancel', onUp);
+
+  track.addEventListener('mousedown', onDown);
+  window.addEventListener('mousemove', onMove);
+  window.addEventListener('mouseup', onUp);
+
+  viewport.addEventListener('mouseenter', ()=>{ hovering = true; });
+  viewport.addEventListener('mouseleave', ()=>{ hovering = false; });
+  document.addEventListener('mouseleave', ()=>{ hovering = false; });
+
+  window.addEventListener('resize', measure);
+  measure();
+
+  // Images load async — re-measure once they've all settled so the loop
+  // width is accurate from the very first frame (avoids a jump/stutter
+  // partway through once late-loading logos change the track's size).
+  const imgs = track.querySelectorAll('img');
+  let pending = imgs.length;
+  if (pending){
+    imgs.forEach(img=>{
+      if (img.complete){ pending--; return; }
+      img.addEventListener('load', ()=>{ if(--pending<=0) measure(); }, {once:true});
+      img.addEventListener('error', ()=>{ if(--pending<=0) measure(); }, {once:true});
+    });
+    if (pending<=0) measure();
+  }
+
+  requestAnimationFrame(tick);
+}
+
+
 let heroIndex = 0;
 let heroTimer = null;
 
@@ -393,7 +675,7 @@ function renderHero(){
     const href = s.link || '#productGrid';
     const target = isExternal ? ' target="_blank" rel="noopener"' : '';
     return `
-    <div class="hero-slide" style="${s.img ? `background-image:url('${s.img}')` : ''}">
+    <div class="hero-slide${s.img ? ' has-img' : ''}" style="${s.img ? `background-image:url('${s.img}')` : ''}">
       <div class="hero-slide-content">
         <div class="hero-eyebrow">${s.eyebrow}</div>
         <h2 class="hero-title">${s.title}</h2>
@@ -407,19 +689,34 @@ function renderHero(){
   `;
   }).join('');
 
-  $('#heroDots').innerHTML = HERO_SLIDES.map((_,i)=>`<button data-i="${i}" class="${i===0?'active':''}"></button>`).join('');
+  $('#heroDots').innerHTML = HERO_SLIDES.map((_,i)=>`<button data-i="${i}" class="${i===0?'active':''}"></button>`).join('')
+    + `<span class="hero-dot-highlight"></span>`;
 
   $$('#heroDots button').forEach(b=>{
     b.addEventListener('click', ()=> goToSlide(parseInt(b.dataset.i)));
   });
 
+  positionHeroDotHighlight();
+  window.addEventListener('resize', positionHeroDotHighlight);
+
   startHeroAuto();
+}
+
+function positionHeroDotHighlight(){
+  const container = $('#heroDots');
+  const highlight = container && container.querySelector('.hero-dot-highlight');
+  const activeBtn = container && container.querySelector('button.active');
+  if (!container || !highlight || !activeBtn) return;
+  const hw = highlight.offsetWidth;
+  const left = activeBtn.offsetLeft + (activeBtn.offsetWidth/2) - (hw/2);
+  highlight.style.transform = `translate(${left}px, -50%)`;
 }
 
 function goToSlide(i){
   heroIndex = i;
   $('#heroTrack').style.transform = `translateX(-${i*100}%)`;
   $$('#heroDots button').forEach((b,idx)=> b.classList.toggle('active', idx===i));
+  positionHeroDotHighlight();
   startHeroAuto();
 }
 
@@ -710,6 +1007,7 @@ function shuffleArray(arr){
 function openProductView(id){
   const p = PRODUCTS.find(p=>p.id===id);
   if (!p) return;
+  state.currentProductId = id;
   renderProductDetail(p);
   renderSimilarProducts(p);
   renderOtherProducts(p);
@@ -773,7 +1071,7 @@ function updateCartUI(){
   const ids = Object.keys(state.cart);
   if (ids.length===0){
     $('#cartItems').innerHTML = `<div class="cart-empty">Your cart is empty.<br>Add some products to get started.</div>`;
-    $('#cartSubtotal').textContent = fmt(0);
+    $('#cartSubtotal').innerHTML = fmt(0);
     return;
   }
 
@@ -808,7 +1106,7 @@ function updateCartUI(){
     `;
   }).join('');
 
-  $('#cartSubtotal').textContent = fmt(subtotal);
+  $('#cartSubtotal').innerHTML = fmt(subtotal);
 
   $$('[data-qty-plus]').forEach(b=> b.addEventListener('click', ()=> changeQty(b.dataset.qtyPlus, 1)));
   $$('[data-qty-minus]').forEach(b=> b.addEventListener('click', ()=> changeQty(b.dataset.qtyMinus, -1)));
@@ -835,7 +1133,7 @@ function closeMenu(){
 function openLogin(){
   $('#authBackdrop').classList.add('show');
   $('#authModal').classList.add('open');
-  setAuthTab('login');
+  showMobileStep();
 }
 function closeLogin(){
   $('#authBackdrop').classList.remove('show');
@@ -849,38 +1147,70 @@ function getSession(){
 }
 // Whatever a shopper added to the cart before logging in lives under the
 // "guest" bucket. On login/register we fold those items into the account's
-// own cart (adding quantities if the same product is in both) so nothing
-// picked before signing in gets left behind.
+// own cart — for any product that's in both, the guest quantity wins and
+// overwrites whatever qty was already saved on the account (not added on
+// top of it), so nothing picked before signing in gets left behind, but
+// old account quantities don't silently inflate.
 function mergeGuestCartIntoAccount(){
   const GUEST_KEY = 'mazi_cart_guest';
+  const targetKey = cartKey();
+  if (targetKey === GUEST_KEY) return; // still on the guest bucket — nothing to merge, and merging into itself would wipe it
   try{
     const guestCart = JSON.parse(localStorage.getItem(GUEST_KEY) || '{}');
     const guestIds = Object.keys(guestCart);
     if (guestIds.length === 0) return;
-    const accountCart = JSON.parse(localStorage.getItem(cartKey()) || '{}');
+    const accountCart = JSON.parse(localStorage.getItem(targetKey) || '{}');
     guestIds.forEach(id=>{
-      accountCart[id] = (accountCart[id] || 0) + guestCart[id];
+      accountCart[id] = guestCart[id]; // overwrite — guest qty wins over whatever qty was already in the account cart for this item
     });
-    localStorage.setItem(cartKey(), JSON.stringify(accountCart));
+    localStorage.setItem(targetKey, JSON.stringify(accountCart));
     localStorage.removeItem(GUEST_KEY);
   } catch(e){}
 }
 function setSession(data){
   localStorage.setItem('mazi_session', JSON.stringify(data));
   mergeGuestCartIntoAccount();
+  recoverMisfiledGuestOrders();
   state.recentSearches = loadRecentSearches();
   state.cart = loadCart();
-  updateCartUI();
+  refreshVisibleCurrency(); // re-renders product grid + open product detail so Add to Cart / Added-to-cart state matches the new account's cart
   updateOrdersNotifBadge();
+  initOrdersNotifPrompt(); // re-check auth state so the prompt reflects being logged in right away
   refreshOpenSearchPanel();
   renderAuthButton();
+}
+// One-time recovery: checkout.js used to key orders off session.email alone,
+// so anyone who logged in via mobile OTP (email left blank) had their
+// placed orders silently saved under the "guest" bucket instead of their
+// real mobile-keyed bucket. checkout.js now matches script.js's accountId()
+// logic, but past orders are still stranded under mazi_orders_guest — pull
+// them into the current (real) account's order history so nothing placed
+// before the fix looks like it disappeared. Since checkout.js has always
+// required a logged-in session to place an order, mazi_orders_guest can
+// only contain orders misfiled by that bug, never genuine guest orders —
+// safe to fold in and clear.
+function recoverMisfiledGuestOrders(){
+  const GUEST_KEY = 'mazi_orders_guest';
+  const targetKey = ordersKey();
+  if (targetKey === GUEST_KEY) return; // not logged in — nothing to recover into
+  try{
+    const misfiled = JSON.parse(localStorage.getItem(GUEST_KEY) || '[]');
+    if (!Array.isArray(misfiled) || misfiled.length === 0) return;
+    const existing = JSON.parse(localStorage.getItem(targetKey) || '[]');
+    const existingIds = new Set(existing.map(o=> o.id));
+    const merged = existing.concat(misfiled.filter(o=> !existingIds.has(o.id)));
+    merged.sort((a,b)=> (b.placedAt||0) - (a.placedAt||0));
+    localStorage.setItem(targetKey, JSON.stringify(merged));
+    localStorage.removeItem(GUEST_KEY);
+  } catch(e){}
 }
 function clearSession(){
   localStorage.removeItem('mazi_session');
   state.recentSearches = loadRecentSearches();
   state.cart = loadCart();
-  updateCartUI();
+  refreshVisibleCurrency(); // re-renders product grid + open product detail so Add to Cart / Added-to-cart state resets back to the guest cart
   updateOrdersNotifBadge();
+  initOrdersNotifPrompt(); // re-check auth state so the "Get notified" prompt/toggle doesn't stay stuck visible after logout
   refreshOpenSearchPanel();
   renderAuthButton();
 }
@@ -1035,7 +1365,7 @@ function placeOrder(customer){
 
   const orders = getOrders();
   const orderNo = `MZ${new Date().getFullYear()}${String(orders.length+1).padStart(4,'0')}`;
-  const order = { id:orderNo, placedAt:Date.now(), items, subtotal, deliveryFee, total, customer: customer || null };
+  const order = { id:orderNo, placedAt:Date.now(), items, subtotal, deliveryFee, total, currency:getCurrency(), customer: customer || null };
   orders.unshift(order);
   saveOrders(orders);
 
@@ -1453,14 +1783,14 @@ function renderOrdersView(){
   }
 
   const ORDER_VISIBLE_ITEMS = 3;
-  const orderRenderItemRow = (it) => `
+  const orderRenderItemRow = (it, order) => `
     <div class="order-item-row">
       <div class="order-item-media"><img src="${productImg(PRODUCTS.find(p=>p.id===it.id) || it)}" alt="${it.name}" onerror="this.classList.add('img-missing')"></div>
       <div class="order-item-info">
         <div class="order-item-name">${it.name}</div>
         <div class="order-item-meta">${it.pack} · Qty ${it.qty}</div>
       </div>
-      <div class="order-item-price">${fmt(it.price*it.qty)}</div>
+      <div class="order-item-price">${fmtCur(it.price*it.qty, order.currency || 'MVR')}</div>
     </div>
   `;
 
@@ -1482,10 +1812,10 @@ function renderOrdersView(){
             ${orderStatusBadge(order)}
           </div>
           <div class="order-items">
-            ${visibleItems.map(it => orderRenderItemRow(it)).join('')}
+            ${visibleItems.map(it => orderRenderItemRow(it, order)).join('')}
             ${hiddenItems.length ? `
               <div class="order-items-hidden" id="orderItemsHidden-${order.id}">
-                ${hiddenItems.map(it => orderRenderItemRow(it)).join('')}
+                ${hiddenItems.map(it => orderRenderItemRow(it, order)).join('')}
               </div>
               <button type="button" class="order-see-more-btn" id="orderSeeMoreBtn-${order.id}" data-order-toggle="${order.id}">
                 <span id="orderSeeMoreLabel-${order.id}">See ${hiddenItems.length} more item${hiddenItems.length!==1?'s':''}</span>
@@ -1495,7 +1825,7 @@ function renderOrdersView(){
           </div>
           <div class="order-total-row">
             <span class="label">Order Total</span>
-            <span class="value">${fmt(order.total)}</span>
+            <span class="value">${fmtCur(order.total, order.currency || 'MVR')}</span>
           </div>
           <div class="order-receipt-row">
             <button type="button" class="order-receipt-btn" data-receipt-order="${order.id}">
@@ -1585,7 +1915,7 @@ function openOrderConfirmModal(order){
         <div class="oc-item-name">${it.name}</div>
         <div class="oc-item-meta">${it.pack} &middot; Qty ${it.qty}</div>
       </div>
-      <div class="oc-item-price">${fmt(it.price * it.qty)}</div>
+      <div class="oc-item-price">${fmtCur(it.price * it.qty, order.currency || 'MVR')}</div>
     </div>
   `;
   const ocVisibleItems = order.items.slice(0, OC_VISIBLE_ITEMS);
@@ -1604,12 +1934,13 @@ function openOrderConfirmModal(order){
     ` : ''}
   `;
 
+  const orderCur = order.currency || 'MVR';
   const subtotal = typeof order.subtotal === 'number' ? order.subtotal : order.total;
-  const feeLabel = order.deliveryFee === 0 ? 'Complimentary' : (order.deliveryFee == null ? 'To be confirmed' : fmt(order.deliveryFee));
+  const feeLabel = order.deliveryFee === 0 ? 'Complimentary' : (order.deliveryFee == null ? 'To be confirmed' : fmtCur(order.deliveryFee, orderCur));
   $('#ocTotals').innerHTML = `
-    <div class="oc-total-row"><span>Subtotal</span><span>${fmt(subtotal)}</span></div>
+    <div class="oc-total-row"><span>Subtotal</span><span>${fmtCur(subtotal, orderCur)}</span></div>
     <div class="oc-total-row"><span>Delivery Fee</span><span>${feeLabel}</span></div>
-    <div class="oc-total-row oc-grand"><span>Order Total</span><span>${fmt(order.total)}</span></div>
+    <div class="oc-total-row oc-grand"><span>Order Total</span><span>${fmtCur(order.total, orderCur)}</span></div>
   `;
 
   const contact = customer.mobile || session.mobile || session.email || '—';
@@ -1681,8 +2012,8 @@ function renderReceiptContent(order){
         <div class="receipt-item">
           <div class="receipt-item-name">${it.name}</div>
           <div class="receipt-item-sub">
-            <span>${it.pack} &times; ${it.qty} @ ${fmt(it.price)}</span>
-            <span>${fmt(it.price * it.qty)}</span>
+            <span>${it.pack} &times; ${it.qty} @ ${fmtCur(it.price, order.currency || 'MVR')}</span>
+            <span>${fmtCur(it.price * it.qty, order.currency || 'MVR')}</span>
           </div>
         </div>
       `).join('')}
@@ -1690,7 +2021,7 @@ function renderReceiptContent(order){
     <div class="receipt-divider"></div>
     <div class="receipt-total-row">
       <span>Total</span>
-      <span>${fmt(order.total)}</span>
+      <span>${fmtCur(order.total, order.currency || 'MVR')}</span>
     </div>
     <div class="receipt-divider"></div>
     <div class="receipt-footer">Thank you for shopping with us!</div>
@@ -1797,10 +2128,9 @@ function openProfileView(){
   $('#pvFirstName').value = session.firstName || session.name || '';
   $('#pvLastName').value = session.lastName || '';
   $('#pvEmail').value = session.email || '';
-  $('#pvMobile').value = session.mobile || '';
-  $('#pvCurrentPassword').value = '';
-  $('#pvNewPassword').value = '';
-  $('#pvConfirmPassword').value = '';
+  $('#pvMobile').value = (session.mobile || '').replace('+960', '');
+  $('#pvDob').value = session.dob || '';
+  syncCurrencyToggleUI();
   initProfileNotifToggle();
   closeOtherFullScreenViews('profileView');
   $('#profileView').classList.add('open');
@@ -1812,23 +2142,19 @@ function closeProfileView(){
   returnToCheckoutIfNeeded();
 }
 function saveProfileView(){
-  const newPass = $('#pvNewPassword').value;
-  const confirmPass = $('#pvConfirmPassword').value;
-  if (newPass && newPass !== confirmPass){
-    showToast("Passwords don't match");
-    return;
-  }
   const session = getSession() || {};
   const firstName = $('#pvFirstName').value.trim() || session.firstName || 'Account';
+  const mobileDigits = $('#pvMobile').value.trim().replace(/[^0-9]/g, '');
   setSession({
     ...session,
     name: firstName,
     firstName,
     lastName: $('#pvLastName').value.trim(),
     email: $('#pvEmail').value.trim(),
-    mobile: $('#pvMobile').value.trim(),
+    mobile: mobileDigits ? `+960${mobileDigits}` : (session.mobile || ''),
+    dob: $('#pvDob').value,
+    currency: getCurrency(),
   });
-  closeProfileView();
   showToast('Profile updated');
 }
 
@@ -1915,36 +2241,9 @@ function closeOnboarding(){
   $('#onboardModal').classList.remove('open');
 }
 
-function setAuthTab(tab){
-  const isLogin = tab === 'login';
-  const authScrollEl = document.querySelector('.auth-card-scroll');
-  const authStartHeight = authScrollEl ? authScrollEl.offsetHeight : null;
-  clearRegisterErrors();
-  pendingRegistration = null;
-  currentOtpCode = null;
-  $('#otpForm').hidden = true;
-  $('#authTabs').hidden = false;
-  $$('.auth-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
-  $('#authTabHighlight').classList.toggle('to-register', !isLogin);
-  $('#loginForm').hidden = !isLogin;
-  $('#registerForm').hidden = isLogin;
-  $('#authGoogleSection').hidden = !isLogin;
-  $('#authTerms').hidden = isLogin;
-  $('#authSubtitle').hidden = !isLogin;
-  $('#authSubtitle').textContent = 'Login with your mobile number / email & password';
-  $('#authSwitchLine').innerHTML = isLogin
-    ? `Don't have an account? <button type="button" id="authSwitchBtn">Register</button>`
-    : `Already have an account? <button type="button" id="authSwitchBtn">Login</button>`;
-  $('#authSwitchBtn').addEventListener('click', ()=> setAuthTab(isLogin ? 'register' : 'login'));
-  $('.auth-card').classList.toggle('auth-card-login', isLogin);
-  $('.auth-card').classList.toggle('auth-card-register', !isLogin);
-
-  // Smooth height morph between Login <-> Register. Register stacks its fields
-  // vertically on mobile (much taller than Login), which used to cause an
-  // abrupt jump — this animates the card to its new height instead.
-  if (authScrollEl && authStartHeight !== null) animateAuthCardHeight(authScrollEl, authStartHeight);
-}
-
+// Smooth height morph used when the auth card switches between the mobile-
+// number step and the OTP step (they're different heights) so it resizes
+// instead of jumping.
 function animateAuthCardHeight(scrollEl, startHeight){
   scrollEl.style.transition = 'none';
   scrollEl.style.overflow = 'hidden';
@@ -2175,12 +2474,16 @@ function initNavScroll(){
 
 /* ============ Init / event wiring ============ */
 function init(){
+  recoverMisfiledGuestOrders(); // heal already-logged-in sessions right away, not just on next login
+
   renderCategoryNav();
   renderHero();
   renderProducts();
+  syncCurrencyToggleUI();
   updateCartUI();
   initNavScroll();
   initSidebarRail();
+  initBrandsTicker();
 
   updateOrdersNotifBadge();
   setInterval(updateOrdersNotifBadge, 20000);
@@ -2344,76 +2647,52 @@ function init(){
 
   $('#authClose').addEventListener('click', closeLogin);
   $('#authBackdrop').addEventListener('click', closeLogin);
-  $$('.auth-tab').forEach(tab=>{
-    tab.addEventListener('click', ()=> setAuthTab(tab.dataset.tab));
-  });
-  $('#authGoogleBtn').addEventListener('click', ()=>{
-    showToast('Google sign-in coming soon');
-  });
-  $('#loginForm').addEventListener('submit', e=>{
+  $('#mobileForm').addEventListener('submit', e=>{
     e.preventDefault();
-    const email = $('#loginForm input[type="email"]').value.trim();
-    const displayName = email ? email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g, c=>c.toUpperCase()) : '';
-    closeLogin();
-    withAuthLoading(()=>{
-      setSession({ name: displayName || 'Account', firstName: displayName || 'Account', lastName: '', email, mobile: '' });
-      openOnboarding(displayName);
-    });
+    const digits = $('#mobileInput').value.trim();
+    const valid = /^[0-9]{7}$/.test(digits);
+    $('#mobileField').classList.toggle('has-error', !valid);
+    $('#mobileError').hidden = valid;
+    if (!valid) return;
+
+    const mobile = `+960${digits}`;
+    showOtpStep(mobile);
   });
-  $('#registerForm').addEventListener('submit', e=>{
-    e.preventDefault();
-    const firstName = $('#registerForm input[placeholder="Juan"]').value.trim();
-    const lastName = $('#registerForm input[placeholder="Dela Cruz"]').value.trim();
-    const mobileInput = $('#registerForm input[type="tel"]');
-    const mobile = mobileInput.value.trim();
-
-    const accounts = getRegisteredAccounts();
-    const mobileTaken = !!mobile && accounts.some(a => a.mobile === mobile);
-
-    $('#regMobileField').classList.toggle('has-error', mobileTaken);
-    $('#regMobileError').hidden = !mobileTaken;
-
-    if (mobileTaken) return;
-
-    pendingRegistration = { firstName, lastName, mobile };
-    showOtpStep();
-  });
+  $('#mobileInput').addEventListener('input', clearMobileError);
   $('#otpForm').addEventListener('submit', e=>{
     e.preventDefault();
-    if (!pendingRegistration) return;
+    if (!pendingMobile) return;
     const entered = $('#otpInput').value.trim();
-    if (entered !== currentOtpCode){
-      $('#otpField').classList.add('has-error');
-      $('#otpError').hidden = false;
+    if (entered.length < 6 || entered !== currentOtpCode){
+      markOtpError();
       return;
     }
-    const { firstName, lastName, mobile } = pendingRegistration;
-    saveRegisteredAccount(mobile);
-    pendingRegistration = null;
+    const mobile = pendingMobile;
+    const accounts = getRegisteredAccounts();
+    const isNewAccount = !accounts.some(a => a.mobile === mobile);
+    if (isNewAccount) saveRegisteredAccount(mobile);
+    pendingMobile = null;
     currentOtpCode = null;
     closeLogin();
     withAuthLoading(()=>{
-      setSession({ name: firstName || 'Account', firstName: firstName || 'Account', lastName, email: '', mobile });
-      openOnboarding(firstName);
+      setSession({ name: 'Account', firstName: 'Account', lastName: '', email: '', mobile });
+      if (isNewAccount) openOnboarding();
     });
   });
-  $('#otpInput').addEventListener('input', ()=>{
-    $('#otpField').classList.remove('has-error');
-    $('#otpError').hidden = true;
+  setupOtpBoxes();
+  $$('.pv-currency-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=> setCurrency(btn.dataset.currency));
+  });
+  $$('.currency-toggle-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=> setCurrency(btn.dataset.currency));
   });
   $('#otpResendBtn').addEventListener('click', ()=>{
-    if (!pendingRegistration) return;
+    if (!pendingMobile) return;
     currentOtpCode = generateOtpCode();
     $('#otpDemoHint').textContent = `Demo mode — no SMS is actually sent. Your code is: ${currentOtpCode}`;
-    $('#otpInput').value = '';
-    $('#otpField').classList.remove('has-error');
-    $('#otpError').hidden = true;
+    resetOtpBoxes();
   });
-  $('#otpBackBtn').addEventListener('click', backToRegisterForm);
-  $('#registerForm input[type="tel"]').addEventListener('input', ()=>{
-    $('#regMobileField').classList.remove('has-error');
-    $('#regMobileError').hidden = true;
-  });
+  $('#otpBackBtn').addEventListener('click', showMobileStep);
 
   $('#obAccountType').addEventListener('change', toggleBusinessFields);
   $('#onboardBackdrop').addEventListener('click', closeOnboarding);
@@ -2434,6 +2713,14 @@ function init(){
   });
 
   $('#searchInput').addEventListener('input', e=> handleSearch(e.target.value));
+  $('#searchInput').addEventListener('focus', e=>{
+    // On mobile the inline pill is just a trigger — actual typing and live
+    // results happen in the full-screen mobile search panel.
+    if (window.matchMedia('(max-width: 720px)').matches){
+      e.target.blur();
+      openMobileSearch();
+    }
+  });
 
   $('#mobileSearchBtn').addEventListener('click', openMobileSearch);
   $('#mobileSearchClose').addEventListener('click', closeMobileSearch);

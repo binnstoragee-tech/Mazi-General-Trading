@@ -124,7 +124,26 @@ const ATOLLS = {
 };
 
 const GST_RATE = 0.08;
-const fmt = n => 'MVR ' + n.toFixed(2);
+
+// Maldivian Rufiyaa is pegged to the US Dollar at MVR 15.42 = USD 1 — same
+// peg rate used on the main shop page.
+const USD_PER_MVR = 1 / 15.42;
+// Currency the shopper picked while browsing (mazi_currency, same key the
+// shop page's MVR/USD toggle writes to). Checkout carries that currency
+// through payment, summary and the bank details instead of forcing MVR.
+function getCurrency(){
+  return localStorage.getItem('mazi_currency') || 'MVR';
+}
+// MVR currency icon markup — replaces the plain "MVR" text everywhere a
+// price is shown. Returned strings are HTML — call sites must use
+// innerHTML, not textContent.
+const MVR_ICON = '<img class="cur-icon" src="img/mvr-icon-black.png" alt="MVR">';
+function fmtCur(n, cur){
+  return (cur === 'USD')
+    ? '$' + (n * USD_PER_MVR).toFixed(2)
+    : MVR_ICON + n.toFixed(2);
+}
+const fmt = n => fmtCur(n, getCurrency());
 const $ = sel => document.querySelector(sel);
 const $$ = (sel, root) => Array.from((root || document).querySelectorAll(sel));
 
@@ -140,7 +159,15 @@ function getSession(){
 }
 function accountId(){
   const session = getSession();
-  return session && session.email ? session.email.toLowerCase() : 'guest';
+  if (!session) return 'guest';
+  // Must match script.js's accountId() exactly — accounts here are
+  // identified by mobile number (OTP login), email is optional/blank
+  // until filled in from Profile. Keying this off email alone put every
+  // mobile-logged-in shopper back in the "guest" bucket here, so
+  // checkout.js read an empty cart and bounced the page back to
+  // index.html?open=cart even though the shop page's cart wasn't empty.
+  const key = (session.mobile || session.email || '').toLowerCase();
+  return key || 'guest';
 }
 function cartKey(){
   return 'mazi_cart_' + accountId();
@@ -262,13 +289,26 @@ function renderSummary(){
   const fee = deliveryFee();
   const total = sub + (fee || 0);
 
-  $('#coSubtotal').textContent = fmt(sub);
-  $('#coGst').textContent = fmt(gst);
+  $('#coSubtotal').innerHTML = fmt(sub);
+  $('#coGst').innerHTML = fmt(gst);
   const feeEl = $('#coDeliveryFee');
   if (fee === 0){ feeEl.textContent = 'Complimentary'; feeEl.classList.add('co-complimentary'); }
   else { feeEl.textContent = 'To be confirmed'; feeEl.classList.remove('co-complimentary'); }
-  $('#coTotal').textContent = fmt(total);
+  $('#coTotal').innerHTML = fmt(total);
 
+  const cur = getCurrency();
+  const totalLabelEl = $('#coTotalLabel');
+  if (totalLabelEl) totalLabelEl.innerHTML = cur === 'USD' ? `Total (USD)` : `Total (${MVR_ICON})`;
+}
+
+/* Highlights whichever bank account matches the shopper's chosen
+   currency, so it's obvious which account to pay into. */
+function renderBankAccounts(){
+  const cur = getCurrency();
+  const mvrRow = $('#coBankMVR');
+  const usdRow = $('#coBankUSD');
+  if (mvrRow) mvrRow.classList.toggle('co-bank-match', cur === 'MVR');
+  if (usdRow) usdRow.classList.toggle('co-bank-match', cur === 'USD');
 }
 
 /* ---------- Delivery preferences ---------- */
@@ -372,7 +412,7 @@ function placeOrder(customer){
 
   const orders = getOrders();
   const orderNo = `MZ${new Date().getFullYear()}${String(orders.length+1).padStart(4,'0')}`;
-  const order = { id:orderNo, placedAt:Date.now(), items, subtotal:sub, deliveryFee:fee, total, customer: customer || null };
+  const order = { id:orderNo, placedAt:Date.now(), items, subtotal:sub, deliveryFee:fee, total, currency:getCurrency(), customer: customer || null };
   orders.unshift(order);
   saveOrders(orders);
 
@@ -392,7 +432,7 @@ function showSuccess(order, contactLabel){
   const itemCount = order.items.reduce((sum,it)=> sum + it.qty, 0);
 
   $('#coSuccessSub').textContent = `Hi ${firstName}, your order for ${itemCount} product${itemCount!==1?'s':''} has been received and is now pending confirmation from our team.`;
-  $('#coSuccessTotal').textContent = fmt(order.total);
+  $('#coSuccessTotal').innerHTML = fmtCur(order.total, order.currency || 'MVR');
   $('#coSuccessOrderId').textContent = order.id;
   const d = new Date(order.placedAt);
   $('#coSuccessDate').textContent = d.toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'}) + ', ' + d.toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'});
@@ -521,6 +561,7 @@ function init(){
   renderContact();
   renderItems();
   renderSummary();
+  renderBankAccounts();
 
   coMethod = 'pickup';
   coPickupDayIndex = 0;

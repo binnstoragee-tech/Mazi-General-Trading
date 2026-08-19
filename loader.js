@@ -1,10 +1,26 @@
 (function () {
-  var MIN_VISIBLE_MS = 1500; // keep the loader on screen for at least 1.5s
+  // Only show the splash on the installed app (desktop or mobile "Add to
+  // Home Screen" / installed PWA window) — never on a normal browser tab.
+  var isStandalone =
+    window.matchMedia('(display-mode: standalone)').matches ||
+    window.matchMedia('(display-mode: window-controls-overlay)').matches ||
+    window.navigator.standalone === true; // iOS Safari home-screen apps
+
+  var loader = document.getElementById('pageLoader');
+  if (!loader) return;
+
+  if (!isStandalone) {
+    // Not installed — remove it immediately, no splash for regular visits.
+    loader.parentNode.removeChild(loader);
+    return;
+  }
+
+  loader.hidden = false;
+
+  var MIN_VISIBLE_MS = 3000; // logo + dots stay on screen for 3s
   var startedAt = Date.now();
 
   function hideLoader() {
-    var loader = document.getElementById('pageLoader');
-    if (!loader) return;
     var elapsed = Date.now() - startedAt;
     var wait = Math.max(0, MIN_VISIBLE_MS - elapsed);
     setTimeout(function () {
@@ -26,6 +42,6 @@
     window.addEventListener('load', hideLoader);
   }
 
-  // Hard safety cap: never let the loader block the page for more than 4s
-  setTimeout(hideLoader, 4000);
+  // Hard safety cap: never let the loader block the app for more than 5s
+  setTimeout(hideLoader, 5000);
 })();
