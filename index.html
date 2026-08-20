@@ -6,6 +6,7 @@
 <title>MGT - Online Store</title>
 <link rel="icon" type="image/png" href="img/favicon.png">
 <link rel="manifest" href="manifest.json">
+<script src="install-prompt.js"></script>
 <meta name="theme-color" content="#164B3B">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -565,6 +566,128 @@
     <span></span><span></span><span></span>
   </div>
 </div>
+
+<!-- ============ INSTALL APP GUIDE ============ -->
+<div class="install-backdrop" id="installBackdrop"></div>
+<div class="install-modal" id="installModal" role="dialog" aria-modal="true" aria-labelledby="installTitle">
+  <div class="install-card">
+    <button type="button" class="install-close-btn" id="installCloseBtn" aria-label="Close">&times;</button>
+
+    <div class="install-scroll">
+      <div class="install-icon-wrap">
+        <span class="install-icon-glow"></span>
+        <span class="install-icon-ring"></span>
+        <div class="install-icon-frame">
+          <img src="img/icon-192.png" alt="MAZI" class="install-icon-img">
+        </div>
+        <span class="install-icon-badge">
+          <svg viewBox="0 0 24 24"><path d="M12 3v12m0 0l-4.5-4.5M12 15l4.5-4.5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+      </div>
+
+      <h2 class="install-title" id="installTitle">How to Install on Your Device</h2>
+      <p class="install-sub" id="installSub">Add MAZI to your home screen for<br class="install-sub-break">quick, app-like access.</p>
+
+      <p class="install-native-note" id="installNativeNote">Your browser supports one-tap install — no manual steps needed.</p>
+
+      <!-- Device tabs — mobile first (Android, iOS), then desktop (Windows).
+           installGuideTabs.js reads navigator.userAgent to pre-select the
+           tab matching the visitor's own device; the rest stay one tap away. -->
+      <div class="install-tabs" id="installTabs" role="tablist" aria-label="Choose your device">
+        <button type="button" class="install-tab active" data-platform="android" role="tab" aria-selected="true">
+          <svg viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><line x1="6" y1="18" x2="18" y2="18" stroke="currentColor" stroke-width="2"/></svg>
+          Android
+        </button>
+        <button type="button" class="install-tab" data-platform="ios" role="tab" aria-selected="false">
+          <svg viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><line x1="6" y1="18" x2="18" y2="18" stroke="currentColor" stroke-width="2"/></svg>
+          iOS
+        </button>
+        <button type="button" class="install-tab" data-platform="windows" role="tab" aria-selected="false">
+          <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><line x1="8" y1="20" x2="16" y2="20" stroke="currentColor" stroke-width="2"/><line x1="12" y1="16" x2="12" y2="20" stroke="currentColor" stroke-width="2"/></svg>
+          Windows
+        </button>
+      </div>
+
+      <!-- Guide screenshot — one image per device (1080×1350 portrait).
+           Swap the <img> src below with your own screenshot; the step
+           instructions are written out as a list underneath it. Until you
+           drop in a real image, this shows a dashed placeholder with the
+           filename it's expecting, so it never looks like a broken image. -->
+      <div class="install-guide-panels" id="installGuidePanels">
+
+        <div class="install-guide-gallery" id="installGuideGallery-android" data-panel="android">
+          <figure class="install-guide-slide">
+            <div class="install-guide-img-wrap zoomable" data-placeholder="Add screenshot — img/android.jpg (1080×1350)" role="button" tabindex="0" aria-label="View screenshot full-size">
+              <img src="img/android.jpg" alt="How to install MAZI on Android" onerror="this.parentElement.classList.add('img-missing')">
+              <span class="install-guide-zoom-hint">
+                <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><line x1="21" y1="21" x2="16.65" y2="16.65" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="11" y1="8" x2="11" y2="14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="8" y1="11" x2="14" y2="11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              </span>
+            </div>
+          </figure>
+          <ol class="install-guide-steps">
+            <li>Tap the <strong>⋮ menu</strong> in Chrome (top right)</li>
+            <li>Tap <strong>Install app</strong></li>
+            <li>Tap <strong>Install</strong> to confirm</li>
+          </ol>
+        </div>
+
+        <div class="install-guide-gallery" id="installGuideGallery-ios" data-panel="ios" hidden>
+          <figure class="install-guide-slide">
+            <div class="install-guide-img-wrap zoomable" data-placeholder="Add screenshot — img/ios.jpg (1080×1350)" role="button" tabindex="0" aria-label="View screenshot full-size">
+              <img src="img/ios.jpg" alt="How to install MAZI on iOS" onerror="this.parentElement.classList.add('img-missing')">
+              <span class="install-guide-zoom-hint">
+                <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><line x1="21" y1="21" x2="16.65" y2="16.65" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="11" y1="8" x2="11" y2="14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="8" y1="11" x2="14" y2="11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              </span>
+            </div>
+          </figure>
+          <ol class="install-guide-steps">
+            <li>Tap the <strong>Share</strong> icon in Safari</li>
+            <li>Scroll down, tap <strong>Add to Home Screen</strong></li>
+            <li>Tap <strong>Add</strong> (top right) to confirm</li>
+          </ol>
+        </div>
+
+        <div class="install-guide-gallery" id="installGuideGallery-windows" data-panel="windows" hidden>
+          <figure class="install-guide-slide">
+            <div class="install-guide-img-wrap zoomable" data-placeholder="Add screenshot — img/desktop.jpg (1080×1350)" role="button" tabindex="0" aria-label="View screenshot full-size">
+              <img src="img/desktop.jpg" alt="How to install MAZI on Windows" onerror="this.parentElement.classList.add('img-missing')">
+              <span class="install-guide-zoom-hint">
+                <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><line x1="21" y1="21" x2="16.65" y2="16.65" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="11" y1="8" x2="11" y2="14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="8" y1="11" x2="14" y2="11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              </span>
+            </div>
+          </figure>
+          <ol class="install-guide-steps">
+            <li>Click the <strong>install icon ⊕</strong></li>
+            <li>Click <strong>Install</strong> in the popup</li>
+            <li>MAZI opens in its own window</li>
+          </ol>
+        </div>
+
+      </div>
+
+      <button type="button" class="install-cta-btn" id="installCtaBtn">
+        <span class="install-cta-check">
+          <svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <span id="installCtaLabel">Got It</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ INSTALL GUIDE SCREENSHOT — FULLSCREEN VIEWER ============ -->
+<!-- Tapping any install-guide screenshot opens it here full-size; the back
+     arrow (or backdrop tap) returns to the install guide modal. -->
+<div class="install-lightbox" id="installLightbox">
+  <button type="button" class="install-lightbox-back" id="installLightboxBack" aria-label="Go back">
+    <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span>Back</span>
+  </button>
+  <div class="install-lightbox-stage">
+    <img src="" alt="" id="installLightboxImg">
+  </div>
+</div>
+
 
 <!-- ============ PROFILE PAGE ============ -->
 <div class="profile-view" id="profileView">

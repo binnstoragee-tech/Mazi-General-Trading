@@ -122,6 +122,7 @@ const VIBER_COMMUNITY_LINK = '';
 const HERO_SLIDES = [
   { eyebrow:'This Week', title:'Free delivery on orders over MVR 500', desc:"Order today within Male' and get it delivered by tomorrow.", cta:'Start Shopping', icon:'🚚', img:'img/delivery.jpg' },
   { eyebrow:'New Arrivals', title:'New products landing every week', desc:'Join our Viber community to be the first to know when new stock arrives.', cta:'Viber Community', icon:'🆕', img:'img/shipment.jpg', link: VIBER_COMMUNITY_LINK || '#' },
+  { eyebrow:'App', title:'How to<br>Install?', desc:'Add MAZI to your home screen for one-tap access and a faster, app-like experience.', cta:'View', icon:'📲', imgMobile:'img/mobile-install-apps.jpg', imgWeb:'img/web-install-apps.jpg', action:'install-guide' },
 ];
 
 /* ---------- State ---------- */
@@ -672,17 +673,26 @@ let heroTimer = null;
 function renderHero(){
   $('#heroTrack').innerHTML = HERO_SLIDES.map(s => {
     const isExternal = !!s.link && s.link !== '#';
+    const isAction = !!s.action;
     const href = s.link || '#productGrid';
     const target = isExternal ? ' target="_blank" rel="noopener"' : '';
+    const ctaTag = isAction
+      ? `<button type="button" class="hero-cta" data-hero-action="${s.action}">${s.cta}</button>`
+      : `<a href="${href}" class="hero-cta"${target}>${s.cta}</a>`;
+    const hasResponsiveImg = !!(s.imgMobile && s.imgWeb);
+    const hasImg = hasResponsiveImg || !!s.img;
+    const slideStyle = hasResponsiveImg
+      ? `--hero-bg-mobile:url('${s.imgMobile}');--hero-bg-web:url('${s.imgWeb}')`
+      : (s.img ? `background-image:url('${s.img}')` : '');
     return `
-    <div class="hero-slide${s.img ? ' has-img' : ''}" style="${s.img ? `background-image:url('${s.img}')` : ''}">
+    <div class="hero-slide${hasImg ? ' has-img' : ''}${hasResponsiveImg ? ' has-responsive-img' : ''}" style="${slideStyle}">
       <div class="hero-slide-content">
         <div class="hero-eyebrow">${s.eyebrow}</div>
         <h2 class="hero-title">${s.title}</h2>
         <p class="hero-desc">${s.desc}</p>
-        <a href="${href}" class="hero-cta"${target}>${s.cta}</a>
+        ${ctaTag}
       </div>
-      ${s.img
+      ${hasImg
         ? ``
         : `<div class="hero-visual">${s.icon}</div>`}
     </div>
@@ -694,6 +704,13 @@ function renderHero(){
 
   $$('#heroDots button').forEach(b=>{
     b.addEventListener('click', ()=> goToSlide(parseInt(b.dataset.i)));
+  });
+
+  $$('#heroTrack [data-hero-action]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const action = btn.dataset.heroAction;
+      if (action === 'install-guide' && window.MaziInstallGuide) window.MaziInstallGuide.show();
+    });
   });
 
   positionHeroDotHighlight();

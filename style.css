@@ -405,6 +405,10 @@ input{font-family:inherit;}
   background-size:cover;
   background-position:center;
 }
+.hero-slide.has-responsive-img{background-image:var(--hero-bg-mobile);}
+@media (min-width: 721px){
+  .hero-slide.has-responsive-img{background-image:var(--hero-bg-web);}
+}
 .hero-slide::after{
   content:'';position:absolute;inset:0;
   background:linear-gradient(90deg, rgba(0,0,0,.48) 0%, rgba(0,0,0,.32) 25%, rgba(0,0,0,.12) 45%, rgba(0,0,0,0) 62%);
@@ -2861,14 +2865,24 @@ input{font-family:inherit;}
 .viber-popup-cta{
   display:flex;align-items:center;justify-content:center;gap:7px;
   width:100%;padding:12px;margin-bottom:12px;
-  background:linear-gradient(135deg,#8B7CF6,#6952E0);
-  color:#fff;font-size:13.5px;font-weight:700;
-  box-shadow:0 8px 18px rgba(105,82,224,.32);
-  transition:transform .15s, box-shadow .15s;
+  border-radius:14px;
+  background:rgba(139,124,246,.16);
+  backdrop-filter:blur(16px) saturate(180%);
+  -webkit-backdrop-filter:blur(16px) saturate(180%);
+  border:1.5px solid rgba(139,124,246,.42);
+  color:#6952E0;font-size:13.5px;font-weight:700;
+  box-shadow:0 8px 20px rgba(105,82,224,.18), inset 0 1px 0 rgba(255,255,255,.55);
+  transition:transform .18s var(--ease-glass), box-shadow .18s var(--ease-glass), background .18s var(--ease-glass), border-color .18s var(--ease-glass);
+}
+.viber-popup-cta:hover{
+  background:rgba(139,124,246,.26);
+  border-color:rgba(139,124,246,.62);
+  transform:translateY(-2px);
+  box-shadow:0 12px 26px rgba(105,82,224,.26), inset 0 1px 0 rgba(255,255,255,.65);
 }
 .viber-popup-cta svg{width:15px;height:15px;transition:transform .2s;}
 .viber-popup-cta:hover svg{transform:translateX(3px);}
-.viber-popup-cta:active{transform:scale(.97);}
+.viber-popup-cta:active{transform:scale(.97) translateY(0);}
 
 .viber-popup-msg{font-size:12px;line-height:1.55;color:var(--ink-soft);}
 
@@ -3786,10 +3800,10 @@ body.page-leaving{animation:page-fade-out .22s ease both;}
 }
 #pageLoader.loader-hide{opacity:0;visibility:hidden;pointer-events:none;}
 .loader-inner{
-  display:flex;flex-direction:column;align-items:center;gap:22px;
+  display:flex;flex-direction:column;align-items:center;gap:30px;
 }
 .loader-logo{
-  height:clamp(56px,8vw,84px);width:auto;
+  height:clamp(168px,24vw,252px);width:auto;
   opacity:0;
   animation:loader-logo-in 1.5s cubic-bezier(.22,1,.36,1) both;
 }
@@ -3800,7 +3814,7 @@ body.page-leaving{animation:page-fade-out .22s ease both;}
 }
 .loader-dots{display:flex;gap:9px;}
 .loader-dots span{
-  width:9px;height:9px;border-radius:50%;
+  width:11px;height:11px;border-radius:50%;
   background:var(--ink-soft);
   animation:loaderDotBounce 1s var(--ease-glass,cubic-bezier(.4,0,.2,1)) infinite;
 }
@@ -3836,4 +3850,364 @@ body.page-leaving{animation:page-fade-out .22s ease both;}
   .co-qr-panel,.co-bank-panel{min-height:0;}
   .co-qr-box{width:min(280px,100%);height:min(280px,72vw);}
   .co-qr-img{max-width:calc(100% - 24px);max-height:calc(100% - 24px);}
+}
+
+/* ============================================================
+   INSTALL APP PROMPT — "How to Install on Your Device"
+   Shown once, right after a successful login.
+============================================================ */
+.install-backdrop{
+  position:fixed;inset:0;z-index:480;
+  background:rgba(12,31,23,.46);
+  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  opacity:0;pointer-events:none;
+  transition:opacity .35s var(--ease-glass);
+}
+.install-backdrop.show{opacity:1;pointer-events:auto;}
+
+.install-modal{
+  position:fixed;inset:0;z-index:490;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  display:flex;justify-content:center;
+  padding:24px 20px;
+  opacity:0;pointer-events:none;
+  transition:opacity .3s var(--ease-glass);
+}
+.install-modal.open{opacity:1;pointer-events:auto;}
+
+.install-card{
+  position:relative;width:100%;max-width:min(92vw, 400px);
+  margin:auto;
+  display:flex;flex-direction:column;
+  background:var(--glass-bg-strong);
+  backdrop-filter:blur(30px) saturate(180%);
+  -webkit-backdrop-filter:blur(30px) saturate(180%);
+  border:1px solid var(--glass-border);
+  border-radius:26px;
+  box-shadow:var(--glass-shadow-lg);
+  text-align:center;
+  transform:translateY(28px) scale(.92);
+  opacity:0;
+  transition:transform .5s cubic-bezier(.34,1.56,.64,1), opacity .35s var(--ease-glass);
+}
+.install-modal.open .install-card{
+  transform:translateY(0) scale(1);
+  opacity:1;
+}
+
+/* Content just flows naturally now — the page/modal itself slides down
+   on both web and mobile instead of scrolling inside a clipped box. */
+.install-scroll{
+  padding:34px 28px 26px;
+}
+
+.install-close-btn{
+  position:absolute;top:14px;right:14px;
+  width:30px;height:30px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;line-height:1;color:var(--ink-soft);
+  background:rgba(255,255,255,.5);
+  border:1px solid var(--glass-border);
+  transition:background .15s, color .15s, transform .15s;
+}
+.install-close-btn:hover{background:rgba(255,255,255,.9);color:var(--ink);transform:rotate(90deg);}
+
+/* ---- icon stack ---- */
+.install-icon-wrap{
+  position:relative;
+  width:100px;height:100px;
+  margin:2px auto 20px;
+  display:flex;align-items:center;justify-content:center;
+}
+.install-icon-glow{
+  position:absolute;inset:-14px;
+  border-radius:50%;
+  background:radial-gradient(circle, rgba(46,140,108,.38) 0%, rgba(46,140,108,0) 70%);
+  animation:installGlowPulse 2.6s ease-in-out infinite;
+}
+.install-icon-ring{
+  position:absolute;inset:0;
+  border-radius:50%;
+  border:1.5px dashed rgba(22,75,59,.28);
+  animation:installRingSpin 14s linear infinite;
+}
+.install-icon-frame{
+  position:relative;z-index:1;
+  width:76px;height:76px;border-radius:22px;
+  background:var(--white);
+  border:1px solid var(--glass-border);
+  box-shadow:0 10px 26px rgba(15,58,46,.22);
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;
+  animation:installIconFloat 3.4s ease-in-out infinite;
+}
+.install-icon-img{width:100%;height:100%;object-fit:cover;display:block;}
+.install-icon-badge{
+  position:absolute;bottom:-6px;right:-6px;z-index:2;
+  width:32px;height:32px;border-radius:50%;
+  background:var(--green-800);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  border:3px solid var(--cream);
+  box-shadow:0 4px 10px rgba(15,58,46,.35);
+  animation:installBadgeBounce 2.2s ease-in-out infinite;
+}
+.install-icon-badge svg{width:16px;height:16px;}
+
+@keyframes installGlowPulse{
+  0%,100%{opacity:.55;transform:scale(1);}
+  50%{opacity:1;transform:scale(1.12);}
+}
+@keyframes installRingSpin{
+  from{transform:rotate(0deg);}
+  to{transform:rotate(360deg);}
+}
+@keyframes installIconFloat{
+  0%,100%{transform:translateY(0);}
+  50%{transform:translateY(-5px);}
+}
+@keyframes installBadgeBounce{
+  0%,100%{transform:translateY(0);}
+  50%{transform:translateY(3px);}
+}
+
+/* ---- copy ---- */
+.install-title{
+  font-family:var(--font-display);
+  font-size:19px;font-weight:700;color:var(--ink);
+  line-height:1.3;margin-bottom:8px;
+  animation:installFadeUp .45s var(--ease-glass) both;
+  animation-delay:.05s;
+}
+.install-sub{
+  font-size:13px;color:var(--ink-soft);line-height:1.55;
+  margin-bottom:18px;
+  animation:installFadeUp .45s var(--ease-glass) both;
+  animation-delay:.1s;
+}
+.install-sub-break{display:none;}
+.install-native-note{
+  font-size:12.5px;font-weight:600;color:var(--green-700);
+  background:var(--green-100);
+  border-radius:12px;
+  padding:10px 14px;
+  margin-bottom:20px;
+  animation:installFadeUp .45s var(--ease-glass) both;
+  animation-delay:.12s;
+}
+.install-native-note[hidden]{display:none;}
+
+@keyframes installFadeUp{
+  from{opacity:0;transform:translateY(8px);}
+  to{opacity:1;transform:translateY(0);}
+}
+
+/* ---- device tabs (Android / iOS / Windows) ---- */
+.install-tabs{
+  display:flex;gap:6px;
+  background:var(--green-100);
+  border-radius:14px;
+  padding:4px;
+  margin-bottom:16px;
+  opacity:0;animation:installFadeUp .45s var(--ease-glass) both;
+  animation-delay:.14s;
+}
+.install-tab{
+  flex:1;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  padding:9px 6px;border-radius:11px;
+  font-size:12.5px;font-weight:700;color:var(--green-700);
+  transition:background .18s var(--ease-glass), color .18s var(--ease-glass), box-shadow .18s var(--ease-glass);
+}
+.install-tab svg{width:15px;height:15px;flex-shrink:0;}
+.install-tab.active{
+  background:var(--white);color:var(--green-900);
+  box-shadow:0 4px 12px rgba(15,58,46,.14);
+}
+.install-tab:hover:not(.active){color:var(--green-900);}
+.install-modal.install-native .install-tabs{display:none;}
+
+/* ---- guide screenshot (swap the <img> src in index.html with your own
+   1080×1350 screenshot — see #installGuideGallery-android/-ios/-windows) ---- */
+.install-guide-panels{position:relative;}
+.install-guide-gallery{margin:0 0 18px;}
+.install-guide-gallery[hidden]{display:none;}
+.install-guide-slide{
+  opacity:0;animation:installFadeUp .45s var(--ease-glass) both;
+  animation-delay:.16s;
+}
+.install-guide-img-wrap{
+  position:relative;
+  aspect-ratio:1080/1350;
+  width:70%;
+  max-width:240px;
+  margin:0 auto;
+  border-radius:16px;overflow:hidden;
+  background:var(--green-100);
+  border:1px solid var(--glass-border);
+}
+.install-guide-img-wrap img{width:100%;height:100%;object-fit:cover;display:block;}
+
+/* Tap-to-view affordance on each guide screenshot */
+.install-guide-img-wrap.zoomable{cursor:pointer;}
+.install-guide-zoom-hint{
+  position:absolute;right:8px;bottom:8px;
+  width:30px;height:30px;border-radius:50%;
+  background:rgba(0,0,0,.5);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+  pointer-events:none;
+  transition:transform .18s ease, background .18s ease;
+}
+.install-guide-zoom-hint svg{width:15px;height:15px;}
+.install-guide-img-wrap.zoomable:hover .install-guide-zoom-hint,
+.install-guide-img-wrap.zoomable:active .install-guide-zoom-hint{
+  background:rgba(0,0,0,.68);transform:scale(1.08);
+}
+.install-guide-img-wrap.img-missing .install-guide-zoom-hint{display:none;}
+
+/* ---- fullscreen screenshot viewer ---- */
+.install-lightbox{
+  position:fixed;inset:0;z-index:1200;
+  background:rgba(10,20,17,.94);
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;visibility:hidden;
+  transition:opacity .22s ease, visibility .22s ease;
+}
+.install-lightbox.show{opacity:1;visibility:visible;}
+.install-lightbox-back{
+  position:absolute;top:18px;left:18px;z-index:2;
+  display:flex;align-items:center;gap:6px;
+  background:rgba(255,255,255,.12);color:#fff;
+  border:1px solid rgba(255,255,255,.22);
+  border-radius:999px;padding:9px 16px 9px 12px;
+  font-size:13px;font-weight:700;
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  transition:background .18s ease;
+}
+.install-lightbox-back:hover{background:rgba(255,255,255,.2);}
+.install-lightbox-back svg{width:18px;height:18px;}
+.install-lightbox-stage{
+  width:100%;height:100%;
+  display:flex;align-items:center;justify-content:center;
+  padding:70px 20px 30px;
+  overflow:hidden;
+  touch-action:none;
+}
+.install-lightbox-stage img{
+  max-width:100%;max-height:100%;
+  border-radius:14px;
+  box-shadow:0 20px 60px rgba(0,0,0,.5);
+  opacity:0;transform:scale(.96);
+  transition:opacity .22s ease .05s, transform .22s ease .05s;
+  cursor:zoom-in;
+  touch-action:none;
+  user-select:none;-webkit-user-select:none;
+}
+.install-lightbox.show .install-lightbox-stage img{opacity:1;transform:scale(1);}
+.install-lightbox-stage img.is-zoomed{cursor:zoom-out;}
+
+/* Shown until you drop in a real screenshot — the onerror handler on the
+   <img> adds this class, so there's never a broken-image icon. */
+.install-guide-img-wrap.img-missing{
+  display:flex;align-items:center;justify-content:center;
+  text-align:center;padding:14px;
+  border:1.5px dashed rgba(22,75,59,.35);
+  background:repeating-linear-gradient(135deg, rgba(22,75,59,.05) 0 10px, rgba(22,75,59,.02) 10px 20px);
+}
+.install-guide-img-wrap.img-missing img{display:none;}
+.install-guide-img-wrap.img-missing::before{
+  content:attr(data-placeholder);
+  font-size:11.5px;font-weight:600;color:var(--green-700);
+  line-height:1.5;
+}
+
+.install-guide-steps{
+  list-style:none;
+  counter-reset:install-step;
+  margin-top:16px;
+  display:flex;flex-direction:column;gap:10px;
+  opacity:0;animation:installFadeUp .45s var(--ease-glass) both;
+  animation-delay:.24s;
+}
+.install-guide-steps li{
+  counter-increment:install-step;
+  display:flex;align-items:center;gap:10px;
+  font-size:13px;font-weight:600;color:var(--ink);
+  text-align:left;
+  white-space:nowrap;
+}
+.install-guide-steps li::before{
+  content:counter(install-step);
+  flex-shrink:0;
+  width:20px;height:20px;border-radius:50%;
+  background:var(--green-100);color:var(--green-800);
+  font-size:11px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;
+  margin-top:1px;
+}
+.install-guide-steps strong{color:var(--green-800);}
+
+/* ---- desktop: screenshot + steps sit side-by-side instead of stacked ---- */
+@media (min-width:860px){
+  .install-card{max-width:600px;}
+  .install-scroll{padding:40px 40px 32px;}
+  .install-guide-gallery{
+    display:flex;align-items:center;gap:28px;
+    text-align:left;
+  }
+  .install-guide-slide{flex-shrink:0;}
+  .install-guide-img-wrap{width:180px;max-width:180px;margin:0;}
+  .install-guide-steps{margin-top:0;flex:1;}
+}
+
+/* ---- actions ---- */
+.install-cta-btn{
+  width:100%;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  padding:14px;border-radius:16px;
+  background:linear-gradient(135deg, var(--green-700), var(--green-900));
+  color:#fff;font-size:14.5px;font-weight:700;
+  box-shadow:0 12px 26px rgba(15,58,46,.32);
+  transition:transform .18s var(--ease-glass), box-shadow .18s var(--ease-glass), filter .15s;
+  animation:installFadeUp .45s var(--ease-glass) both;
+  animation-delay:.38s;
+}
+.install-cta-btn:hover{transform:translateY(-2px);box-shadow:0 16px 32px rgba(15,58,46,.38);filter:brightness(1.05);}
+.install-cta-btn:active,
+.install-cta-btn.install-cta-pop{transform:scale(.96);}
+.install-cta-check{
+  width:22px;height:22px;border-radius:50%;
+  background:rgba(255,255,255,.22);
+  display:flex;align-items:center;justify-content:center;
+  transition:transform .3s cubic-bezier(.34,1.56,.64,1), background .2s;
+}
+.install-cta-check svg{width:13px;height:13px;}
+.install-cta-btn.install-cta-pop .install-cta-check{
+  transform:scale(1.35) rotate(-8deg);
+  background:rgba(255,255,255,.4);
+}
+
+/* Native one-tap variant (beforeinstallprompt available) skips the
+   screenshot guide — the note above the button explains why. */
+.install-modal.install-native .install-guide-gallery{display:none;}
+
+@media (max-width:640px){
+  .install-card{border-radius:22px;}
+  .install-modal{padding:12px;}
+  .install-scroll{padding:30px 20px 20px;}
+  .install-icon-wrap{width:88px;height:88px;margin-bottom:16px;}
+  .install-icon-frame{width:68px;height:68px;border-radius:19px;}
+  .install-title{font-size:17.5px;}
+  .install-sub{font-size:12.5px;}
+  .install-sub-break{display:inline;}
+  .install-guide-slide{flex-basis:82%;}
+  .install-tab{font-size:11.5px;padding:8px 4px;gap:4px;}
+  .install-tab svg{width:13px;height:13px;}
+}
+
+/* Extra headroom on very narrow phones so the one-line steps never
+   crowd or overflow their row. */
+@media (max-width:360px){
+  .install-guide-steps li{font-size:12px;gap:8px;}
 }
